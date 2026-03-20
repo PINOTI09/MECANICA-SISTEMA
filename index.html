@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mecânica Linha Pesada | Gestão Separada</title>
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background-color: #121417; color: #ffffff; min-height: 100vh; font-size: 13px; }
+        
+        /* CABEÇALHO AMPLIADO */
+        header { 
+            background: #1c1f23; 
+            padding: 25px 5%; 
+            border-bottom: 2px solid #3b82f6; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            position: sticky; 
+            top: 0; 
+            z-index: 101;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .logo { display: flex; flex-direction: column; }
+        .logo h1 { font-size: 1.6rem; color: #fff; letter-spacing: 1px; text-transform: uppercase; }
+        .logo span { color: #3b82f6; font-size: 0.8rem; font-weight: bold; margin-top: 2px; }
+        
+        .busca-topo-container { flex: 1; max-width: 500px; margin: 0 40px; }
+        .input-busca-topo { 
+            width: 100%; padding: 14px 25px; background: #121417; border: 1px solid #444; 
+            color: #fff; border-radius: 30px; font-size: 0.9rem; transition: 0.3s; 
+        }
+        .input-busca-topo:focus { border-color: #3b82f6; background: #000; outline: none; }
+
+        /* MENU DE NAVEGAÇÃO */
+        nav { background: #1c1f23; display: flex; justify-content: center; border-bottom: 1px solid #333; overflow-x: auto; position: sticky; top: 103px; z-index: 100; }
+        .tab-link { padding: 18px 25px; cursor: pointer; font-weight: bold; font-size: 0.75rem; color: #888; text-transform: uppercase; border-bottom: 3px solid transparent; white-space: nowrap; transition: 0.2s; }
+        .tab-link:hover { color: #fff; }
+        .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.05); }
+
+        .container { padding: 30px 5%; max-width: 1400px; margin: auto; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* ESTILO DOS CARDS */
+        .card { background: #1c1f23; padding: 25px; border-radius: 12px; border: 1px solid #333; margin-bottom: 25px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        .campo { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .campo label { font-size: 0.7rem; color: #888; margin-bottom: 6px; text-transform: uppercase; font-weight: bold; }
+        
+        input, select { padding: 14px; border: 1px solid #444; border-radius: 8px; background: #121417; color: #fff; outline: none; font-size: 0.85rem; }
+        input:focus { border-color: #3b82f6; background: #000; }
+
+        .tabela-wrap { background: #1c1f23; border-radius: 12px; border: 1px solid #333; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
+        th { background: #141619; padding: 15px; text-align: left; font-size: 0.7rem; color: #3b82f6; text-transform: uppercase; border-bottom: 2px solid #333; }
+        td { padding: 15px; border-bottom: 1px solid #2d3136; vertical-align: middle; }
+
+        .btn { padding: 14px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; font-size: 0.8rem; text-transform: uppercase; transition: 0.2s; }
+        .btn-blue { background: #3b82f6; color: #fff; }
+        .btn-blue:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn-red-sm { background: #ef4444; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 0.65rem; }
+
+        #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 9999; }
+    </style>
+</head>
+<body onload="verificarLogin()">
+
+    <div id="tela-login">
+        <div class="card" style="width: 350px; text-align: center; border-color: #3b82f6;">
+            <h2 style="color: #3b82f6; margin-bottom: 25px;">LINHA PESADA ACCESS</h2>
+            <div class="campo"><input type="text" id="user" placeholder="Usuário"></div>
+            <div class="campo"><input type="password" id="pass" placeholder="Senha"></div>
+            <button onclick="logar()" class="btn btn-blue" style="width:100%; margin-top:10px;">ENTRAR</button>
+        </div>
+    </div>
+
+    <div id="sistema" style="display:none;">
+        <header>
+            <div class="logo">
+                <h1>Mecânica Linha Pesada</h1>
+                <span>CNPJ: 48.794.084/0001-09</span>
+            </div>
+            
+            <div class="busca-topo-container">
+                <input type="text" class="input-busca-topo" id="buscaGlobal" placeholder="Pesquisa rápida (Placa, Cliente ou Doc)..." oninput="realizarBuscaGlobal()">
+            </div>
+            
+            <button class="btn btn-red-sm" onclick="logout()" style="padding:10px 20px">SAIR</button>
+        </header>
+
+        <nav>
+            <div class="tab-link active" onclick="abrirAba(event, 'aba_novo_cliente')">➕ Novo Cliente</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_lista_clientes')">👥 Lista de Clientes</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_nova_oc')">🛠️ Nova Ordem</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_financeiro')">💰 Financeiro</div>
+        </nav>
+
+        <main class="container">
+            
+            <section id="aba_novo_cliente" class="tab-content active">
+                <div class="card">
+                    <h2 style="margin-bottom:25px; color:#3b82f6; border-left: 4px solid #3b82f6; padding-left: 15px;">CADASTRO DE NOVO CLIENTE</h2>
+                    <div class="grid-form">
+                        <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc"></div>
+                        <div class="campo"><label>Telefone / WhatsApp</label><input type="text" id="cl_tel"></div>
+                        <div class="campo"><label>Cidade / Estado</label><input type="text" id="cl_cidade"></div>
+                        <div class="campo"><label>Endereço Completo</label><input type="text" id="cl_end"></div>
+                        <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
+                    </div>
+                    <button class="btn btn-blue" style="margin-top:30px;" onclick="salvarCliente()">SALVAR NO SISTEMA</button>
+                </div>
+            </section>
+
+            <section id="aba_lista_clientes" class="tab-content">
+                <div class="tabela-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>CLIENTE</th>
+                                <th>DOCUMENTO</th>
+                                <th>CONTATO</th>
+                                <th>LOCALIZAÇÃO</th>
+                                <th>AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaClientesTabela"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="aba_nova_oc" class="tab-content">
+                <div class="card">
+                    <h2 style="margin-bottom:25px; color:#22c55e; border-left: 4px solid #22c55e; padding-left: 15px;">GERAR ORDEM DE SERVIÇO</h2>
+                    <div class="grid-form">
+                        <div class="campo"><label>Selecionar Cliente</label><select id="oc_cliente_select"></select></div>
+                        <div class="campo"><label>Placa do Veículo</label><input type="text" id="oc_placa"></div>
+                        <div class="campo"><label>Mecânico</label><select id="oc_mecanico"><option value="Abel">Abel Moreira</option><option value="Igor">Igor</option></select></div>
+                        <div class="campo"><label>Valor do Serviço R$</label><input type="number" id="oc_valor"></div>
+                    </div>
+                    <div class="campo" style="margin-top:15px"><label>Descrição das Peças / Mão de Obra</label><input type="text" id="oc_desc"></div>
+                    <button class="btn btn-blue" style="background:#22c55e; margin-top:20px" onclick="salvarOC()">LANÇAR SERVIÇO</button>
+                </div>
+            </section>
+
+            <section id="aba_financeiro" class="tab-content">
+                <div class="card" style="text-align:center;">
+                    <label>SALDO PENDENTE TOTAL</label>
+                    <h1 id="resumo_financeiro" style="color:#ef4444; font-size: 3rem;">R$ 0.00</h1>
+                </div>
+                <div class="tabela-wrap">
+                    <table>
+                        <thead><tr><th>CLIENTE</th><th>PLACA</th><th>VALOR</th><th>STATUS</th><th>AÇÃO</th></tr></thead>
+                        <tbody id="listaFinanceiroTabela"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg",
+            authDomain: "mecanica-linha-pesada.firebaseapp.com",
+            projectId: "mecanica-linha-pesada",
+            storageBucket: "mecanica-linha-pesada.firebasestorage.app",
+            messagingSenderId: "1067537543837",
+            appId: "1:1067537543837:web:b3247ef2b1907f395f1a74"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- AUTH ---
+        window.logar = () => {
+            if(document.getElementById('user').value === "Larissa" && document.getElementById('pass').value === "8489") {
+                localStorage.setItem('linhapesada_login', 'true'); location.reload();
+            } else alert("Senha incorreta!");
+        };
+        window.logout = () => { localStorage.removeItem('linhapesada_login'); location.reload(); };
+        window.verificarLogin = () => { if(localStorage.getItem('linhapesada_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
+
+        window.abrirAba = (e, id) => {
+            document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active'));
+            document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
+        };
+
+        // --- CLIENTES ---
+        window.salvarCliente = async () => {
+            const nome = document.getElementById('cl_nome').value;
+            if(!nome) return alert("Digite o nome!");
+            await addDoc(collection(db, "clientes"), {
+                nome: nome, doc: document.getElementById('cl_doc').value,
+                tel: document.getElementById('cl_tel').value, cidade: document.getElementById('cl_cidade').value,
+                end: document.getElementById('cl_end').value, email: document.getElementById('cl_email').value
+            });
+            alert("Cliente cadastrado!");
+            document.querySelectorAll('#aba_novo_cliente input').forEach(i => i.value = "");
+            abrirAba({currentTarget: document.querySelectorAll('.tab-link')[1]}, 'aba_lista_clientes');
+        };
+
+        window.excluirCliente = async (id) => { if(confirm("Remover cliente?")) await deleteDoc(doc(db, "clientes", id)); };
+
+        // --- ORDENS ---
+        window.salvarOC = async () => {
+            await addDoc(collection(db, "ordens"), {
+                cliente: document.getElementById('oc_cliente_select').value,
+                placa: document.getElementById('oc_placa').value,
+                mecanico: document.getElementById('oc_mecanico').value,
+                valor: parseFloat(document.getElementById('oc_valor').value || 0),
+                desc: document.getElementById('oc_desc').value,
+                status: 'pendente',
+                data: new Date().toLocaleDateString('pt-BR')
+            });
+            alert("Ordem de serviço lançada!");
+            abrirAba({currentTarget: document.querySelectorAll('.tab-link')[3]}, 'aba_financeiro');
+        };
+
+        window.baixarPagamento = async (id) => { await updateDoc(doc(db, "ordens", id), { status: 'pago' }); };
+
+        // --- SYNC & RENDER ---
+        let dClientes = [], dOrdens = [];
+
+        onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
+            dClientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const tabela = document.getElementById('listaClientesTabela');
+            const select = document.getElementById('oc_cliente_select');
+            tabela.innerHTML = ""; select.innerHTML = "";
+            dClientes.forEach(c => {
+                tabela.innerHTML += `<tr><td style="font-weight:bold">${c.nome.toUpperCase()}</td><td>${c.doc}</td><td>${c.tel}</td><td>${c.cidade}</td><td><button class="btn btn-red-sm" onclick="excluirCliente('${c.id}')">EXCLUIR</button></td></tr>`;
+                select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+            });
+        });
+
+        onSnapshot(collection(db, "ordens"), (snap) => {
+            dOrdens = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            const tabela = document.getElementById('listaFinanceiroTabela');
+            let pendente = 0; tabela.innerHTML = "";
+            dOrdens.forEach(o => {
+                if(o.status === 'pendente') pendente += o.valor;
+                tabela.innerHTML += `<tr><td>${o.cliente}</td><td>${o.placa.toUpperCase()}</td><td>R$ ${o.valor.toFixed(2)}</td><td style="color:${o.status==='pago'?'#22c55e':'#ef4444'}">${o.status.toUpperCase()}</td><td>${o.status==='pendente' ? `<button class="btn btn-red-sm" style="background:#22c55e" onclick="baixarPagamento('${o.id}')">RECEBER</button>` : 'OK'}</td></tr>`;
+            });
+            document.getElementById('resumo_financeiro').innerText = `R$ ${pendente.toFixed(2)}`;
+        });
+
+        // BUSCA GLOBAL
+        window.realizarBuscaGlobal = () => {
+            const t = document.getElementById('buscaGlobal').value.toLowerCase();
+            if(t) {
+                // Filtra clientes e muda pra aba de lista se achar algo
+                const cFiltrado = dClientes.filter(c => c.nome.toLowerCase().includes(t) || c.doc.includes(t));
+                if(cFiltrado.length > 0) abrirAba({currentTarget: document.querySelectorAll('.tab-link')[1]}, 'aba_lista_clientes');
+            }
+        };
+
+    </script>
+</body>
+</html>
