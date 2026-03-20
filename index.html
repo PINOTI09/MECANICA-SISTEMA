@@ -9,43 +9,66 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; }
         
+        /* CABEÇALHO */
         header { 
-            background: #1c1f23; padding: 20px 5%; border-bottom: 3px solid #3b82f6; 
+            background: #1c1f23; padding: 15px 5%; border-bottom: 3px solid #3b82f6; 
             display: flex; justify-content: space-between; align-items: center; 
-            position: sticky; top: 0; z-index: 101; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            position: sticky; top: 0; z-index: 101;
         }
-        .logo h1 { font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
-        .logo span { color: #3b82f6; font-size: 0.85rem; font-weight: bold; }
+        .logo h1 { font-size: 1.2rem; color: #fff; text-transform: uppercase; }
+        .logo span { color: #3b82f6; font-size: 0.8rem; font-weight: bold; display: block; }
         
-        nav { background: #1c1f23; display: flex; justify-content: space-around; border-bottom: 1px solid #333; position: sticky; top: 85px; z-index: 100; }
-        .tab-link { padding: 15px 10px; cursor: pointer; font-weight: bold; font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; border-bottom: 3px solid transparent; transition: 0.3s; flex: 1; text-align: center; }
+        /* NAVEGAÇÃO */
+        nav { background: #1c1f23; display: flex; border-bottom: 1px solid #333; position: sticky; top: 75px; z-index: 100; }
+        .tab-link { padding: 15px 5px; cursor: pointer; font-weight: bold; font-size: 0.75rem; color: #9ca3af; flex: 1; text-align: center; border-bottom: 3px solid transparent; }
         .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
 
-        .container { padding: 20px 4%; max-width: 1200px; margin: auto; }
-        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .container { padding: 15px; max-width: 1200px; margin: auto; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: #1c1f23; padding: 20px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
-        h2 { font-size: 1.1rem; margin-bottom: 20px; color: #3b82f6; border-left: 4px solid #3b82f6; padding-left: 12px; }
+        .card { background: #1c1f23; padding: 15px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 15px; }
+        h2 { font-size: 1rem; margin-bottom: 15px; color: #3b82f6; border-left: 4px solid #3b82f6; padding-left: 10px; }
         
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
-        .campo { display: flex; flex-direction: column; margin-bottom: 12px; }
-        .campo label { font-size: 0.75rem; color: #9ca3af; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+        .campo { display: flex; flex-direction: column; margin-bottom: 10px; }
+        .campo label { font-size: 0.75rem; color: #9ca3af; margin-bottom: 5px; font-weight: 600; }
         
-        input, select, textarea { padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #fff; font-size: 1rem; outline: none; transition: 0.2s; width: 100%; }
-        input:focus { border-color: #3b82f6; }
+        input, select, textarea { padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #fff; font-size: 1rem; width: 100%; }
 
-        .tabela-wrap { background: #1c1f23; border-radius: 12px; border: 1px solid #2d3136; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 900px; }
-        th { background: #111827; padding: 14px; text-align: left; font-size: 0.75rem; color: #3b82f6; border-bottom: 2px solid #2d3136; }
-        td { padding: 14px; border-bottom: 1px solid #2d3136; color: #d1d5db; font-size: 0.85rem; }
+        /* --- ADAPTAÇÃO PARA CELULAR (TABELAS) --- */
+        @media screen and (max-width: 768px) {
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #374151; margin-bottom: 10px; border-radius: 8px; background: #1c1f23; padding: 5px; }
+            td { border: none; position: relative; padding-left: 50% !important; text-align: left; min-height: 35px; border-bottom: 1px solid #2d3136; }
+            td:last-child { border-bottom: none; text-align: center; padding-left: 15px !important; }
+            
+            /* Coloca o título do campo antes do dado no celular */
+            td:before { 
+                position: absolute; left: 15px; width: 45%; padding-right: 10px; 
+                white-space: nowrap; font-weight: bold; color: #3b82f6; font-size: 0.7rem;
+            }
+            /* Textos das colunas para Clientes */
+            #listaClientes td:nth-of-type(1):before { content: "NOME:"; }
+            #listaClientes td:nth-of-type(2):before { content: "DOC:"; }
+            #listaClientes td:nth-of-type(3):before { content: "TEL:"; }
+            #listaClientes td:nth-of-type(4):before { content: "E-MAIL:"; }
+            #listaClientes td:nth-of-type(5):before { content: "ENDEREÇO:"; }
 
-        .btn { padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; display: inline-block; text-align: center; width: 100%; margin-top: 5px; }
+            /* Textos das colunas para Financeiro */
+            #listaFinanceiro td:nth-of-type(1):before { content: "DATA:"; }
+            #listaFinanceiro td:nth-of-type(2):before { content: "CLIENTE:"; }
+            #listaFinanceiro td:nth-of-type(3):before { content: "PLACA:"; }
+            #listaFinanceiro td:nth-of-type(4):before { content: "MECÂNICO:"; }
+            #listaFinanceiro td:nth-of-type(5):before { content: "VALOR:"; }
+        }
+
+        .btn { padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; margin-top: 5px; }
         .btn-blue { background: #3b82f6; color: #fff; }
         .btn-green { background: #10b981; color: #fff; }
-        .btn-red-sm { background: #ef4444; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; margin-right: 5px; }
-        .btn-edit-sm { background: #3b82f6; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; }
+        .btn-red-sm { background: #ef4444; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.7rem; }
+        .btn-edit-sm { background: #3b82f6; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.7rem; margin-right: 5px; }
 
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 9999; }
     </style>
@@ -57,7 +80,7 @@
             <h2 style="border:none; padding:0; margin-bottom:30px">SISTEMA MECÂNICA</h2>
             <div class="campo"><input type="text" id="user" placeholder="Usuário (Larissa)"></div>
             <div class="campo"><input type="password" id="pass" placeholder="Senha"></div>
-            <button onclick="logar()" class="btn btn-blue">ACESSAR PAINEL</button>
+            <button onclick="logar()" class="btn btn-blue">ENTRAR</button>
         </div>
     </div>
 
@@ -67,7 +90,7 @@
                 <h1>Mecânica Linha Pesada</h1>
                 <span>CNPJ: 48.794.084/0001-09</span>
             </div>
-            <button class="btn-red-sm" onclick="logout()">SAIR</button>
+            <button class="btn-red-sm" style="width:auto" onclick="logout()">SAIR</button>
         </header>
 
         <nav>
@@ -77,34 +100,30 @@
         </nav>
 
         <main class="container">
-            
             <section id="aba_cliente" class="tab-content active">
                 <div class="card">
-                    <h2 id="titulo-form-cliente">CADASTRAR CLIENTE</h2>
+                    <h2 id="titulo-form-cliente">NOVO CLIENTE</h2>
                     <input type="hidden" id="cl_id">
                     <div class="grid-form">
-                        <div class="campo"><label>Nome ou Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF ou CNPJ</label><input type="text" id="cl_doc"></div>
+                        <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc"></div>
                         <div class="campo"><label>Telefone</label><input type="text" id="cl_tel"></div>
                         <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
                     </div>
-                    <div class="campo" style="margin-top:10px"><label>Endereço Completo</label><input type="text" id="cl_endereco"></div>
-                    
-                    <button class="btn btn-blue" id="btn-salvar-cliente" onclick="salvarCliente()">SALVAR CLIENTE</button>
-                    <button class="btn" id="btn-cancelar-edit" style="display:none; background:#4b5563; color:white;" onclick="limparFormCliente()">CANCELAR EDIÇÃO</button>
+                    <div class="campo" style="margin-top:5px"><label>Endereço</label><input type="text" id="cl_endereco"></div>
+                    <button class="btn btn-blue" id="btn-salvar-cliente" onclick="salvarCliente()">SALVAR</button>
+                    <button class="btn" id="btn-cancelar-edit" style="display:none; background:#4b5563; color:white;" onclick="limparFormCliente()">CANCELAR</button>
                 </div>
 
-                <div class="tabela-wrap">
-                    <table>
-                        <thead><tr><th>NOME / RAZÃO</th><th>CPF/CNPJ</th><th>CONTATO</th><th>E-MAIL</th><th>ENDEREÇO</th><th>AÇÕES</th></tr></thead>
-                        <tbody id="listaClientes"></tbody>
-                    </table>
-                </div>
+                <table>
+                    <thead><tr><th>NOME</th><th>DOC</th><th>CONTATO</th><th>E-MAIL</th><th>ENDEREÇO</th><th>AÇÕES</th></tr></thead>
+                    <tbody id="listaClientes"></tbody>
+                </table>
             </section>
 
             <section id="aba_ordem" class="tab-content">
                 <div class="card">
-                    <h2>LANÇAR NOVA O.S.</h2>
+                    <h2>LANÇAR O.S.</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
                         <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
@@ -116,22 +135,20 @@
                         </div>
                         <div class="campo"><label>Valor R$</label><input type="number" id="os_valor" step="0.01"></div>
                     </div>
-                    <div class="campo"><label>Descrição do Serviço</label><textarea id="os_desc" rows="2"></textarea></div>
-                    <button class="btn btn-green" onclick="salvarOS()">REGISTRAR SERVIÇO</button>
+                    <div class="campo"><label>O que foi feito?</label><textarea id="os_desc" rows="2"></textarea></div>
+                    <button class="btn btn-green" onclick="salvarOS()">LANÇAR SERVIÇO</button>
                 </div>
             </section>
 
             <section id="aba_caixa" class="tab-content">
                 <div class="card" style="text-align:center;">
-                    <label>TOTAL PENDENTE</label>
+                    <label style="font-size:0.7rem">TOTAL A RECEBER</label>
                     <h1 id="total_pendente" style="color:#ef4444; font-size: 2rem;">R$ 0,00</h1>
                 </div>
-                <div class="tabela-wrap">
-                    <table>
-                        <thead><tr><th>DATA</th><th>CLIENTE</th><th>PLACA</th><th>MECÂNICO</th><th>VALOR</th><th>AÇÃO</th></tr></thead>
-                        <tbody id="listaFinanceiro"></tbody>
-                    </table>
-                </div>
+                <table>
+                    <thead><tr><th>DATA</th><th>CLIENTE</th><th>PLACA</th><th>MECÂNICO</th><th>VALOR</th><th>AÇÃO</th></tr></thead>
+                    <tbody id="listaFinanceiro"></tbody>
+                </table>
             </section>
         </main>
     </div>
@@ -152,11 +169,10 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- LOGIN ---
         window.logar = () => {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            if(u.toLowerCase() === "larissa" && p === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Acesso negado!");
+            if(u.toLowerCase() === "larissa" && p === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha incorreta!");
         };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
@@ -166,7 +182,6 @@
             document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
         };
 
-        // --- FUNÇÕES CLIENTES ---
         window.salvarCliente = async () => {
             const id = document.getElementById('cl_id').value;
             const dados = {
@@ -176,31 +191,19 @@
                 email: document.getElementById('cl_email').value,
                 endereco: document.getElementById('cl_endereco').value
             };
-
-            if(!dados.nome) return alert("O Nome/Razão Social é obrigatório!");
-
-            try {
-                if(id) {
-                    await updateDoc(doc(db, "clientes", id), dados);
-                    alert("Dados do cliente atualizados!");
-                } else {
-                    await addDoc(collection(db, "clientes"), dados);
-                    alert("Novo cliente cadastrado!");
-                }
-                limparFormCliente();
-            } catch (e) { alert("Erro ao salvar!"); }
+            if(!dados.nome) return alert("Preencha o nome!");
+            id ? await updateDoc(doc(db, "clientes", id), dados) : await addDoc(collection(db, "clientes"), dados);
+            limparFormCliente();
         };
 
-        window.prepararEdicao = (id, nome, doc, tel, email, endereco) => {
+        window.prepararEdicao = (id, n, d, t, e, en) => {
             document.getElementById('cl_id').value = id;
-            document.getElementById('cl_nome').value = nome;
-            document.getElementById('cl_doc').value = doc;
-            document.getElementById('cl_tel').value = tel;
-            document.getElementById('cl_email').value = email;
-            document.getElementById('cl_endereco').value = endereco;
-            
-            document.getElementById('titulo-form-cliente').innerText = "EDITANDO CLIENTE";
-            document.getElementById('btn-salvar-cliente').innerText = "ATUALIZAR DADOS";
+            document.getElementById('cl_nome').value = n;
+            document.getElementById('cl_doc').value = d;
+            document.getElementById('cl_tel').value = t;
+            document.getElementById('cl_email').value = e;
+            document.getElementById('cl_endereco').value = en;
+            document.getElementById('titulo-form-cliente').innerText = "EDITANDO...";
             document.getElementById('btn-cancelar-edit').style.display = "block";
             window.scrollTo(0,0);
         };
@@ -208,64 +211,53 @@
         window.limparFormCliente = () => {
             document.getElementById('cl_id').value = "";
             document.querySelectorAll('#aba_cliente input').forEach(i => i.value = "");
-            document.getElementById('titulo-form-cliente').innerText = "CADASTRAR CLIENTE";
-            document.getElementById('btn-salvar-cliente').innerText = "SALVAR CLIENTE";
+            document.getElementById('titulo-form-cliente').innerText = "NOVO CLIENTE";
             document.getElementById('btn-cancelar-edit').style.display = "none";
         };
 
-        window.excluirCliente = async (id) => { if(confirm("Remover este cliente permanentemente?")) await deleteDoc(doc(db, "clientes", id)); };
+        window.excluirCliente = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "clientes", id)); };
 
-        // --- FUNÇÕES SERVIÇOS ---
         window.salvarOS = async () => {
-            const cliente = document.getElementById('os_cliente').value;
-            const valor = parseFloat(document.getElementById('os_valor').value || 0);
-            if(!cliente || valor <= 0) return alert("Selecione o cliente e informe o valor!");
-
+            const v = parseFloat(document.getElementById('os_valor').value || 0);
+            if(v <= 0) return alert("Informe o valor!");
             await addDoc(collection(db, "servicos"), {
-                cliente, placa: document.getElementById('os_placa').value,
+                cliente: document.getElementById('os_cliente').value,
+                placa: document.getElementById('os_placa').value,
                 mecanico: document.getElementById('os_mecanico').value,
-                valor, desc: document.getElementById('os_desc').value,
+                valor: v, desc: document.getElementById('os_desc').value,
                 status: 'pendente', data: new Date().toLocaleDateString('pt-BR')
             });
-            alert("Serviço registrado!");
+            alert("Lançado!");
             abrirAba({currentTarget: document.querySelectorAll('.tab-link')[2]}, 'aba_caixa');
         };
 
-        window.receberPagamento = async (id) => { if(confirm("Confirmar recebimento?")) await updateDoc(doc(db, "servicos", id), { status: 'pago' }); };
+        window.receberPagamento = async (id) => { if(confirm("Pago?")) await updateDoc(doc(db, "servicos", id), { status: 'pago' }); };
 
-        // --- ATUALIZAÇÃO EM TEMPO REAL ---
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
-            const lista = document.getElementById('listaClientes');
-            const select = document.getElementById('os_cliente');
-            lista.innerHTML = ""; select.innerHTML = '<option value="">Selecione o Cliente...</option>';
-            snap.docs.forEach(d => {
-                const c = d.data();
-                lista.innerHTML += `<tr>
-                    <td><b>${c.nome.toUpperCase()}</b></td>
-                    <td>${c.doc || '-'}</td>
-                    <td>${c.tel || '-'}</td>
-                    <td>${c.email || '-'}</td>
-                    <td>${c.endereco || '-'}</td>
-                    <td>
-                        <button class="btn-edit-sm" onclick="prepararEdicao('${d.id}','${c.nome}','${c.doc}','${c.tel}','${c.email}','${c.endereco}')">EDITAR</button>
-                        <button class="btn-red-sm" onclick="excluirCliente('${d.id}')">X</button>
-                    </td>
-                </tr>`;
-                select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+            const l = document.getElementById('listaClientes');
+            const s = document.getElementById('os_cliente');
+            l.innerHTML = ""; s.innerHTML = '<option value="">Selecionar...</option>';
+            snap.docs.forEach(docSnap => {
+                const c = docSnap.data();
+                l.innerHTML += `<tr><td>${c.nome}</td><td>${c.doc}</td><td>${c.tel}</td><td>${c.email}</td><td>${c.endereco}</td>
+                <td><button class="btn-edit-sm" onclick="prepararEdicao('${docSnap.id}','${c.nome}','${c.doc}','${c.tel}','${c.email}','${c.endereco}')">EDITAR</button>
+                <button class="btn-red-sm" onclick="excluirCliente('${docSnap.id}')">X</button></td></tr>`;
+                s.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
 
         onSnapshot(collection(db, "servicos"), (snap) => {
-            const lista = document.getElementById('listaFinanceiro');
-            let pendente = 0; lista.innerHTML = "";
-            snap.docs.forEach(d => {
-                const s = d.data();
+            const l = document.getElementById('listaFinanceiro');
+            let p = 0; l.innerHTML = "";
+            snap.docs.forEach(docSnap => {
+                const s = docSnap.data();
                 if(s.status === 'pendente') {
-                    pendente += s.valor;
-                    lista.innerHTML += `<tr><td>${s.data}</td><td>${s.cliente}</td><td>${s.placa.toUpperCase()}</td><td>${s.mecanico}</td><td>R$ ${s.valor.toFixed(2)}</td><td><button class="btn-red-sm" style="background:#10b981" onclick="receberPagamento('${d.id}')">PAGO</button></td></tr>`;
+                    p += s.valor;
+                    l.innerHTML += `<tr><td>${s.data}</td><td>${s.cliente}</td><td>${s.placa}</td><td>${s.mecanico}</td><td>R$ ${s.valor.toFixed(2)}</td>
+                    <td><button class="btn-green" style="padding:10px" onclick="receberPagamento('${docSnap.id}')">PAGO</button></td></tr>`;
                 }
             });
-            document.getElementById('total_pendente').innerText = `R$ ${pendente.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total_pendente').innerText = `R$ ${p.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
         });
     </script>
 </body>
