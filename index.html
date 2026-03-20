@@ -2,25 +2,21 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mecânica Linha Pesada | Gestão</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mecânica Linha Pesada | Sistema Profissional</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; }
         
-        /* CABEÇALHO */
-        header { 
-            background: #1c1f23; padding: 15px 5%; border-bottom: 3px solid #3b82f6; 
-            display: flex; justify-content: space-between; align-items: center; 
-            position: sticky; top: 0; z-index: 101;
-        }
-        .logo h1 { font-size: 1.2rem; color: #fff; text-transform: uppercase; }
-        .logo span { color: #3b82f6; font-size: 0.8rem; font-weight: bold; display: block; }
+        header { background: #1c1f23; padding: 15px; border-bottom: 3px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 101; }
+        .logo h1 { font-size: 1.1rem; color: #fff; text-transform: uppercase; }
+        .logo span { color: #3b82f6; font-size: 0.75rem; font-weight: bold; display: block; }
         
-        /* NAVEGAÇÃO */
-        nav { background: #1c1f23; display: flex; border-bottom: 1px solid #333; position: sticky; top: 75px; z-index: 100; }
-        .tab-link { padding: 15px 5px; cursor: pointer; font-weight: bold; font-size: 0.75rem; color: #9ca3af; flex: 1; text-align: center; border-bottom: 3px solid transparent; }
+        nav { background: #1c1f23; display: flex; border-bottom: 1px solid #333; position: sticky; top: 65px; z-index: 100; overflow-x: auto; }
+        .tab-link { padding: 15px; cursor: pointer; font-weight: bold; font-size: 0.7rem; color: #9ca3af; flex: 1; text-align: center; border-bottom: 3px solid transparent; min-width: 100px; }
         .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
 
         .container { padding: 15px; max-width: 1200px; margin: auto; }
@@ -30,56 +26,39 @@
         .card { background: #1c1f23; padding: 15px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 15px; }
         h2 { font-size: 1rem; margin-bottom: 15px; color: #3b82f6; border-left: 4px solid #3b82f6; padding-left: 10px; }
         
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
         .campo { display: flex; flex-direction: column; margin-bottom: 10px; }
-        .campo label { font-size: 0.75rem; color: #9ca3af; margin-bottom: 5px; font-weight: 600; }
+        .campo label { font-size: 0.7rem; color: #9ca3af; margin-bottom: 5px; font-weight: 600; }
         
-        input, select, textarea { padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #fff; font-size: 1rem; width: 100%; }
+        input, select, textarea { padding: 10px; border: 1px solid #374151; border-radius: 6px; background: #111827; color: #fff; font-size: 0.9rem; width: 100%; }
 
-        /* --- ADAPTAÇÃO PARA CELULAR (TABELAS) --- */
+        /* TABELA DE ITENS DA O.S. */
+        .tabela-itens { width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 0.8rem; }
+        .tabela-itens th { text-align: left; padding: 8px; color: #3b82f6; border-bottom: 1px solid #333; }
+        .tabela-itens td { padding: 5px; border-bottom: 1px solid #262a30; }
+        .input-item { background: transparent; border: 1px solid #333; padding: 5px; font-size: 0.8rem; }
+
+        /* RESPONSIVIDADE TABELAS */
         @media screen and (max-width: 768px) {
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; }
-            tr { border: 1px solid #374151; margin-bottom: 10px; border-radius: 8px; background: #1c1f23; padding: 5px; }
-            td { border: none; position: relative; padding-left: 50% !important; text-align: left; min-height: 35px; border-bottom: 1px solid #2d3136; }
-            td:last-child { border-bottom: none; text-align: center; padding-left: 15px !important; }
-            
-            /* Coloca o título do campo antes do dado no celular */
-            td:before { 
-                position: absolute; left: 15px; width: 45%; padding-right: 10px; 
-                white-space: nowrap; font-weight: bold; color: #3b82f6; font-size: 0.7rem;
-            }
-            /* Textos das colunas para Clientes */
-            #listaClientes td:nth-of-type(1):before { content: "NOME:"; }
-            #listaClientes td:nth-of-type(2):before { content: "DOC:"; }
-            #listaClientes td:nth-of-type(3):before { content: "TEL:"; }
-            #listaClientes td:nth-of-type(4):before { content: "E-MAIL:"; }
-            #listaClientes td:nth-of-type(5):before { content: "ENDEREÇO:"; }
-
-            /* Textos das colunas para Financeiro */
-            #listaFinanceiro td:nth-of-type(1):before { content: "DATA:"; }
-            #listaFinanceiro td:nth-of-type(2):before { content: "CLIENTE:"; }
-            #listaFinanceiro td:nth-of-type(3):before { content: "PLACA:"; }
-            #listaFinanceiro td:nth-of-type(4):before { content: "MECÂNICO:"; }
-            #listaFinanceiro td:nth-of-type(5):before { content: "VALOR:"; }
+            .mobile-hide { display: none; }
+            .tabela-itens input, .tabela-itens select { font-size: 0.75rem; padding: 5px; }
         }
 
-        .btn { padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; margin-top: 5px; }
+        .btn { padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; transition: 0.2s; }
         .btn-blue { background: #3b82f6; color: #fff; }
         .btn-green { background: #10b981; color: #fff; }
-        .btn-red-sm { background: #ef4444; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.7rem; }
-        .btn-edit-sm { background: #3b82f6; color: #fff; padding: 10px; border-radius: 6px; font-size: 0.7rem; margin-right: 5px; }
+        .btn-red { background: #ef4444; color: #fff; }
+        .btn-outline { background: transparent; border: 1px solid #3b82f6; color: #3b82f6; margin-top: 10px; }
 
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 9999; }
     </style>
 </head>
-<body onload="verificarLogin()">
+<body onload="verificarLogin(); setarDataHoje();">
 
     <div id="tela-login">
-        <div class="card" style="width: 90%; max-width: 350px; text-align: center;">
-            <h2 style="border:none; padding:0; margin-bottom:30px">SISTEMA MECÂNICA</h2>
-            <div class="campo"><input type="text" id="user" placeholder="Usuário (Larissa)"></div>
-            <div class="campo"><input type="password" id="pass" placeholder="Senha"></div>
+        <div class="card" style="width: 90%; max-width: 320px; text-align: center;">
+            <h2 style="border:none;">SISTEMA MECÂNICA</h2>
+            <input type="password" id="pass" placeholder="Senha" style="margin-bottom:15px">
             <button onclick="logar()" class="btn btn-blue">ENTRAR</button>
         </div>
     </div>
@@ -87,45 +66,25 @@
     <div id="sistema" style="display:none;">
         <header>
             <div class="logo">
-                <h1>Mecânica Linha Pesada</h1>
+                <h1>Linha Pesada</h1>
                 <span>CNPJ: 48.794.084/0001-09</span>
             </div>
-            <button class="btn-red-sm" style="width:auto" onclick="logout()">SAIR</button>
+            <button onclick="logout()" style="background:none; border:none; color:#ef4444; font-weight:bold;">SAIR</button>
         </header>
 
         <nav>
-            <div class="tab-link active" onclick="abrirAba(event, 'aba_cliente')">CLIENTES</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_ordem')">SERVIÇOS</div>
+            <div class="tab-link active" onclick="abrirAba(event, 'aba_ordem')">NOVA O.S.</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_cliente')">CLIENTES</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_caixa')">CAIXA</div>
         </nav>
 
         <main class="container">
-            <section id="aba_cliente" class="tab-content active">
+            <section id="aba_ordem" class="tab-content active">
                 <div class="card">
-                    <h2 id="titulo-form-cliente">NOVO CLIENTE</h2>
-                    <input type="hidden" id="cl_id">
-                    <div class="grid-form">
-                        <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc"></div>
-                        <div class="campo"><label>Telefone</label><input type="text" id="cl_tel"></div>
-                        <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
-                    </div>
-                    <div class="campo" style="margin-top:5px"><label>Endereço</label><input type="text" id="cl_endereco"></div>
-                    <button class="btn btn-blue" id="btn-salvar-cliente" onclick="salvarCliente()">SALVAR</button>
-                    <button class="btn" id="btn-cancelar-edit" style="display:none; background:#4b5563; color:white;" onclick="limparFormCliente()">CANCELAR</button>
-                </div>
-
-                <table>
-                    <thead><tr><th>NOME</th><th>DOC</th><th>CONTATO</th><th>E-MAIL</th><th>ENDEREÇO</th><th>AÇÕES</th></tr></thead>
-                    <tbody id="listaClientes"></tbody>
-                </table>
-            </section>
-
-            <section id="aba_ordem" class="tab-content">
-                <div class="card">
-                    <h2>LANÇAR O.S.</h2>
+                    <h2>DADOS DA ORDEM DE SERVIÇO</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
+                        <div class="campo"><label>KM</label><input type="number" id="os_km"></div>
                         <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
                         <div class="campo"><label>Mecânico</label>
                             <select id="os_mecanico">
@@ -133,25 +92,75 @@
                                 <option value="Igor">Igor</option>
                             </select>
                         </div>
-                        <div class="campo"><label>Valor R$</label><input type="number" id="os_valor" step="0.01"></div>
+                        <div class="campo"><label>Data Serviço</label><input type="date" id="os_data"></div>
+                        <div class="campo"><label>Vencimento</label><input type="date" id="os_vencimento"></div>
                     </div>
-                    <div class="campo"><label>O que foi feito?</label><textarea id="os_desc" rows="2"></textarea></div>
-                    <button class="btn btn-green" onclick="salvarOS()">LANÇAR SERVIÇO</button>
+                </div>
+
+                <div class="card">
+                    <h2>ITENS DO SERVIÇO</h2>
+                    <div style="overflow-x: auto;">
+                        <table class="tabela-itens">
+                            <thead>
+                                <tr>
+                                    <th>TIPO</th>
+                                    <th>PEÇA/SERVIÇO</th>
+                                    <th style="width:70px">QTD</th>
+                                    <th style="width:100px">UNIT R$</th>
+                                    <th style="width:100px">TOTAL R$</th>
+                                </tr>
+                            </thead>
+                            <tbody id="corpo-itens">
+                                </tbody>
+                        </table>
+                    </div>
+                    <button class="btn-outline" onclick="adicionarLinha()">+ Adicionar Item</button>
+
+                    <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                        <div class="grid-form">
+                            <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcularTotalOS()"></div>
+                            <div class="campo"><label>VALOR FINAL</label><input type="text" id="os_total_geral" readonly style="color:#10b981; font-weight:bold; font-size:1.2rem"></div>
+                        </div>
+                    </div>
+                    <div class="grid-form" style="margin-top:15px">
+                        <button class="btn btn-green" onclick="salvarOS()">SALVAR O.S.</button>
+                        <button class="btn btn-blue" onclick="gerarPDF()">VISUALIZAR PDF</button>
+                    </div>
                 </div>
             </section>
 
-            <section id="aba_caixa" class="tab-content">
-                <div class="card" style="text-align:center;">
-                    <label style="font-size:0.7rem">TOTAL A RECEBER</label>
-                    <h1 id="total_pendente" style="color:#ef4444; font-size: 2rem;">R$ 0,00</h1>
+            <section id="aba_cliente" class="tab-content">
+                <div class="card">
+                    <h2 id="titulo-cl">CADASTRAR CLIENTE</h2>
+                    <input type="hidden" id="cl_id">
+                    <div class="grid-form">
+                        <input type="text" id="cl_nome" placeholder="Nome / Razão Social">
+                        <input type="text" id="cl_doc" placeholder="CPF / CNPJ">
+                        <input type="text" id="cl_tel" placeholder="Telefone">
+                    </div>
+                    <button class="btn btn-blue" style="margin-top:10px" onclick="salvarCliente()">SALVAR CLIENTE</button>
                 </div>
-                <table>
-                    <thead><tr><th>DATA</th><th>CLIENTE</th><th>PLACA</th><th>MECÂNICO</th><th>VALOR</th><th>AÇÃO</th></tr></thead>
-                    <tbody id="listaFinanceiro"></tbody>
-                </table>
+                <div id="listaClientes"></div>
+            </section>
+
+            <section id="aba_caixa" class="tab-content">
+                <div class="card" style="text-align:center">
+                    <label>PENDENTE NO MÊS</label>
+                    <h1 id="total_caixa" style="color:#ef4444">R$ 0,00</h1>
+                </div>
+                <div id="listaFinanceiro"></div>
             </section>
         </main>
     </div>
+
+    <datalist id="estoque_pecas">
+        <option value="Filtro de Óleo Diesel">
+        <option value="Lona de Freio Traseira">
+        <option value="Óleo de Motor 15W40">
+        <option value="Bolsa de Ar Cabine">
+        <option value="Tambor de Freio">
+        <option value="Embreagem Completa">
+    </datalist>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -169,11 +178,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        window.logar = () => {
-            const u = document.getElementById('user').value;
-            const p = document.getElementById('pass').value;
-            if(u.toLowerCase() === "larissa" && p === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha incorreta!");
-        };
+        // --- LOGIN ---
+        window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha incorreta!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
 
@@ -182,83 +188,181 @@
             document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
         };
 
-        window.salvarCliente = async () => {
-            const id = document.getElementById('cl_id').value;
-            const dados = {
-                nome: document.getElementById('cl_nome').value,
-                doc: document.getElementById('cl_doc').value,
-                tel: document.getElementById('cl_tel').value,
-                email: document.getElementById('cl_email').value,
-                endereco: document.getElementById('cl_endereco').value
-            };
-            if(!dados.nome) return alert("Preencha o nome!");
-            id ? await updateDoc(doc(db, "clientes", id), dados) : await addDoc(collection(db, "clientes"), dados);
-            limparFormCliente();
+        window.setarDataHoje = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; adicionarLinha(); };
+
+        // --- LÓGICA DE ITENS DA O.S. ---
+        window.adicionarLinha = () => {
+            const corpo = document.getElementById('corpo-itens');
+            const tr = document.createElement('tr');
+            tr.className = 'linha-item';
+            tr.innerHTML = `
+                <td>
+                    <select class="input-item os-tipo">
+                        <option value="Mão-de-Obra">Mão-de-Obra</option>
+                        <option value="Peça Abel">Peça Abel</option>
+                        <option value="Peça Mecânica">Peça Mecânica</option>
+                    </select>
+                </td>
+                <td><input type="text" class="input-item os-desc" list="estoque_pecas" placeholder="Digite a peça..."></td>
+                <td><input type="number" class="input-item os-qtd" value="1" oninput="calcularTotalOS()"></td>
+                <td><input type="number" class="input-item os-unit" value="0" oninput="calcularTotalOS()"></td>
+                <td><input type="text" class="input-item os-total-linha" value="0.00" readonly></td>
+            `;
+            corpo.appendChild(tr);
         };
 
-        window.prepararEdicao = (id, n, d, t, e, en) => {
+        window.calcularTotalOS = () => {
+            let subtotal = 0;
+            document.querySelectorAll('.linha-item').forEach(linha => {
+                const qtd = parseFloat(linha.querySelector('.os-qtd').value || 0);
+                const unit = parseFloat(linha.querySelector('.os-unit').value || 0);
+                const totalLinha = qtd * unit;
+                linha.querySelector('.os-total-linha').value = totalLinha.toFixed(2);
+                subtotal += totalLinha;
+            });
+            const desc = parseFloat(document.getElementById('os_desconto').value || 0);
+            document.getElementById('os_total_geral').value = (subtotal - desc).toFixed(2);
+        };
+
+        // --- SALVAR O.S. ---
+        window.salvarOS = async () => {
+            const itens = [];
+            document.querySelectorAll('.linha-item').forEach(linha => {
+                itens.push({
+                    tipo: linha.querySelector('.os-tipo').value,
+                    desc: linha.querySelector('.os-desc').value,
+                    qtd: linha.querySelector('.os-qtd').value,
+                    unit: linha.querySelector('.os-unit').value,
+                    total: linha.querySelector('.os-total-linha').value
+                });
+            });
+
+            const dataServico = document.getElementById('os_data').value;
+
+            await addDoc(collection(db, "ordens"), {
+                cliente: document.getElementById('os_cliente').value,
+                km: document.getElementById('os_km').value,
+                placa: document.getElementById('os_placa').value,
+                mecanico: document.getElementById('os_mecanico').value,
+                data: dataServico,
+                vencimento: document.getElementById('os_vencimento').value,
+                itens: itens,
+                desconto: document.getElementById('os_desconto').value,
+                total: document.getElementById('os_total_geral').value,
+                status: 'pendente'
+            });
+
+            alert("Ordem de Serviço salva!");
+            // LIMPAR TUDO MENOS A DATA
+            document.getElementById('os_km').value = "";
+            document.getElementById('os_placa').value = "";
+            document.getElementById('os_vencimento').value = "";
+            document.getElementById('os_desconto').value = "0";
+            document.getElementById('os_total_geral').value = "0.00";
+            document.getElementById('corpo-itens').innerHTML = "";
+            adicionarLinha();
+        };
+
+        // --- PDF PROFISSIONAL ---
+        window.gerarPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            
+            // Cabeçalho
+            docPdf.setFontSize(18);
+            docPdf.text("Mecânica Linha Pesada", 14, 20);
+            docPdf.setFontSize(10);
+            docPdf.text("CNPJ: 48.794.084/0001-09", 14, 26);
+            docPdf.text(`Data: ${document.getElementById('os_data').value}`, 160, 20);
+
+            // Dados do Cliente
+            docPdf.setFontSize(12);
+            docPdf.text(`Cliente: ${document.getElementById('os_cliente').value}`, 14, 40);
+            docPdf.text(`Placa: ${document.getElementById('os_placa').value} | KM: ${document.getElementById('os_km').value}`, 14, 47);
+            docPdf.text(`Mecânico: ${document.getElementById('os_mecanico').value}`, 14, 54);
+
+            // Itens
+            const headers = [["Tipo", "Descrição", "Qtd", "Unit R$", "Total R$"]];
+            const data = [];
+            document.querySelectorAll('.linha-item').forEach(linha => {
+                data.push([
+                    linha.querySelector('.os-tipo').value,
+                    linha.querySelector('.os-desc').value,
+                    linha.querySelector('.os-qtd').value,
+                    linha.querySelector('.os-unit').value,
+                    linha.querySelector('.os-total-linha').value
+                ]);
+            });
+
+            docPdf.autoTable({
+                startY: 65,
+                head: headers,
+                body: data,
+                theme: 'striped',
+                headStyles: { fillColor: [59, 130, 246] }
+            });
+
+            const finalY = docPdf.lastAutoTable.finalY + 10;
+            docPdf.text(`Desconto: R$ ${document.getElementById('os_desconto').value}`, 140, finalY);
+            docPdf.setFontSize(14);
+            docPdf.text(`TOTAL GERAL: R$ ${document.getElementById('os_total_geral').value}`, 140, finalY + 10);
+
+            docPdf.save(`OS_${document.getElementById('os_placa').value}.pdf`);
+        };
+
+        // --- CLIENTES ---
+        window.salvarCliente = async () => {
+            const nome = document.getElementById('cl_nome').value;
+            const id = document.getElementById('cl_id').value;
+            if(!nome) return alert("Nome obrigatório");
+            const dados = { nome, doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value };
+            id ? await updateDoc(doc(db, "clientes", id), dados) : await addDoc(collection(db, "clientes"), dados);
+            document.querySelectorAll('#aba_cliente input').forEach(i => i.value="");
+            document.getElementById('titulo-cl').innerText = "CADASTRAR CLIENTE";
+        };
+
+        window.prepararEdicao = (id, n, d, t) => {
             document.getElementById('cl_id').value = id;
             document.getElementById('cl_nome').value = n;
             document.getElementById('cl_doc').value = d;
             document.getElementById('cl_tel').value = t;
-            document.getElementById('cl_email').value = e;
-            document.getElementById('cl_endereco').value = en;
-            document.getElementById('titulo-form-cliente').innerText = "EDITANDO...";
-            document.getElementById('btn-cancelar-edit').style.display = "block";
+            document.getElementById('titulo-cl').innerText = "EDITANDO CLIENTE";
             window.scrollTo(0,0);
-        };
-
-        window.limparFormCliente = () => {
-            document.getElementById('cl_id').value = "";
-            document.querySelectorAll('#aba_cliente input').forEach(i => i.value = "");
-            document.getElementById('titulo-form-cliente').innerText = "NOVO CLIENTE";
-            document.getElementById('btn-cancelar-edit').style.display = "none";
         };
 
         window.excluirCliente = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "clientes", id)); };
 
-        window.salvarOS = async () => {
-            const v = parseFloat(document.getElementById('os_valor').value || 0);
-            if(v <= 0) return alert("Informe o valor!");
-            await addDoc(collection(db, "servicos"), {
-                cliente: document.getElementById('os_cliente').value,
-                placa: document.getElementById('os_placa').value,
-                mecanico: document.getElementById('os_mecanico').value,
-                valor: v, desc: document.getElementById('os_desc').value,
-                status: 'pendente', data: new Date().toLocaleDateString('pt-BR')
-            });
-            alert("Lançado!");
-            abrirAba({currentTarget: document.querySelectorAll('.tab-link')[2]}, 'aba_caixa');
-        };
-
-        window.receberPagamento = async (id) => { if(confirm("Pago?")) await updateDoc(doc(db, "servicos", id), { status: 'pago' }); };
-
+        // --- SYNC ---
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
-            const l = document.getElementById('listaClientes');
-            const s = document.getElementById('os_cliente');
-            l.innerHTML = ""; s.innerHTML = '<option value="">Selecionar...</option>';
-            snap.docs.forEach(docSnap => {
-                const c = docSnap.data();
-                l.innerHTML += `<tr><td>${c.nome}</td><td>${c.doc}</td><td>${c.tel}</td><td>${c.email}</td><td>${c.endereco}</td>
-                <td><button class="btn-edit-sm" onclick="prepararEdicao('${docSnap.id}','${c.nome}','${c.doc}','${c.tel}','${c.email}','${c.endereco}')">EDITAR</button>
-                <button class="btn-red-sm" onclick="excluirCliente('${docSnap.id}')">X</button></td></tr>`;
-                s.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+            const list = document.getElementById('listaClientes');
+            const select = document.getElementById('os_cliente');
+            list.innerHTML = ""; select.innerHTML = "";
+            snap.docs.forEach(d => {
+                const c = d.data();
+                list.innerHTML += `<div class="card" style="margin-top:5px; display:flex; justify-content:space-between;">
+                    <div><b>${c.nome}</b><br><small>${c.doc} | ${c.tel}</small></div>
+                    <div>
+                        <button class="btn-blue" style="width:auto; padding:5px 10px;" onclick="prepararEdicao('${d.id}','${c.nome}','${c.doc}','${c.tel}')">EDITAR</button>
+                        <button class="btn-red" style="width:auto; padding:5px 10px;" onclick="excluirCliente('${d.id}')">X</button>
+                    </div>
+                </div>`;
+                select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
 
-        onSnapshot(collection(db, "servicos"), (snap) => {
-            const l = document.getElementById('listaFinanceiro');
-            let p = 0; l.innerHTML = "";
-            snap.docs.forEach(docSnap => {
-                const s = docSnap.data();
-                if(s.status === 'pendente') {
-                    p += s.valor;
-                    l.innerHTML += `<tr><td>${s.data}</td><td>${s.cliente}</td><td>${s.placa}</td><td>${s.mecanico}</td><td>R$ ${s.valor.toFixed(2)}</td>
-                    <td><button class="btn-green" style="padding:10px" onclick="receberPagamento('${docSnap.id}')">PAGO</button></td></tr>`;
+        onSnapshot(collection(db, "ordens"), (snap) => {
+            const list = document.getElementById('listaFinanceiro');
+            let total = 0; list.innerHTML = "";
+            snap.docs.forEach(d => {
+                const o = d.data();
+                if(o.status === 'pendente') {
+                    total += parseFloat(o.total);
+                    list.innerHTML += `<div class="card"><b>${o.cliente}</b> - ${o.placa}<br>Total: R$ ${o.total}</div>`;
                 }
             });
-            document.getElementById('total_pendente').innerText = `R$ ${p.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('total_caixa').innerText = `R$ ${total.toFixed(2)}`;
         });
     </script>
 </body>
 </html>
+
