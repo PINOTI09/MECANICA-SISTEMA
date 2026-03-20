@@ -9,7 +9,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; }
         
-        /* CABEÇALHO PROFISSIONAL */
         header { 
             background: #1c1f23; padding: 20px 5%; border-bottom: 3px solid #3b82f6; 
             display: flex; justify-content: space-between; align-items: center; 
@@ -18,7 +17,6 @@
         .logo h1 { font-size: 1.4rem; color: #fff; text-transform: uppercase; letter-spacing: 1px; }
         .logo span { color: #3b82f6; font-size: 0.85rem; font-weight: bold; }
         
-        /* NAVEGAÇÃO POR ABAS */
         nav { background: #1c1f23; display: flex; justify-content: space-around; border-bottom: 1px solid #333; position: sticky; top: 85px; z-index: 100; }
         .tab-link { padding: 15px 10px; cursor: pointer; font-weight: bold; font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; border-bottom: 3px solid transparent; transition: 0.3s; flex: 1; text-align: center; }
         .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
@@ -28,27 +26,26 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* CARDS E FORMULÁRIOS */
         .card { background: #1c1f23; padding: 20px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
         h2 { font-size: 1.1rem; margin-bottom: 20px; color: #3b82f6; border-left: 4px solid #3b82f6; padding-left: 12px; }
         
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
         .campo { display: flex; flex-direction: column; margin-bottom: 12px; }
         .campo label { font-size: 0.75rem; color: #9ca3af; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
         
-        input, select, textarea { padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #fff; font-size: 1rem; outline: none; transition: 0.2s; }
-        input:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+        input, select, textarea { padding: 12px; border: 1px solid #374151; border-radius: 8px; background: #111827; color: #fff; font-size: 1rem; outline: none; transition: 0.2s; width: 100%; }
+        input:focus { border-color: #3b82f6; }
 
-        /* TABELAS */
         .tabela-wrap { background: #1c1f23; border-radius: 12px; border: 1px solid #2d3136; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; }
         th { background: #111827; padding: 14px; text-align: left; font-size: 0.75rem; color: #3b82f6; border-bottom: 2px solid #2d3136; }
-        td { padding: 14px; border-bottom: 1px solid #2d3136; color: #d1d5db; }
+        td { padding: 14px; border-bottom: 1px solid #2d3136; color: #d1d5db; font-size: 0.85rem; }
 
-        .btn { padding: 14px 24px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; display: inline-block; text-align: center; }
-        .btn-blue { background: #3b82f6; color: #fff; width: 100%; }
-        .btn-green { background: #10b981; color: #fff; width: 100%; }
-        .btn-red-sm { background: #ef4444; color: #fff; padding: 6px 10px; border-radius: 4px; font-size: 0.7rem; }
+        .btn { padding: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; font-size: 0.9rem; transition: 0.2s; display: inline-block; text-align: center; width: 100%; margin-top: 5px; }
+        .btn-blue { background: #3b82f6; color: #fff; }
+        .btn-green { background: #10b981; color: #fff; }
+        .btn-red-sm { background: #ef4444; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; margin-right: 5px; }
+        .btn-edit-sm { background: #3b82f6; color: #fff; padding: 8px; border-radius: 4px; font-size: 0.65rem; cursor: pointer; }
 
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 9999; }
     </style>
@@ -83,19 +80,23 @@
             
             <section id="aba_cliente" class="tab-content active">
                 <div class="card">
-                    <h2>CADASTRAR CLIENTE</h2>
+                    <h2 id="titulo-form-cliente">CADASTRAR CLIENTE</h2>
+                    <input type="hidden" id="cl_id">
                     <div class="grid-form">
-                        <div class="campo"><label>Nome / Empresa</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc"></div>
+                        <div class="campo"><label>Nome ou Razão Social</label><input type="text" id="cl_nome"></div>
+                        <div class="campo"><label>CPF ou CNPJ</label><input type="text" id="cl_doc"></div>
                         <div class="campo"><label>Telefone</label><input type="text" id="cl_tel"></div>
-                        <div class="campo"><label>Cidade</label><input type="text" id="cl_cidade"></div>
+                        <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
                     </div>
-                    <button class="btn btn-blue" style="margin-top:10px" onclick="salvarCliente()">SALVAR CLIENTE</button>
+                    <div class="campo" style="margin-top:10px"><label>Endereço Completo</label><input type="text" id="cl_endereco"></div>
+                    
+                    <button class="btn btn-blue" id="btn-salvar-cliente" onclick="salvarCliente()">SALVAR CLIENTE</button>
+                    <button class="btn" id="btn-cancelar-edit" style="display:none; background:#4b5563; color:white;" onclick="limparFormCliente()">CANCELAR EDIÇÃO</button>
                 </div>
 
                 <div class="tabela-wrap">
                     <table>
-                        <thead><tr><th>NOME</th><th>DOC</th><th>CONTATO</th><th>CIDADE</th><th>AÇÃO</th></tr></thead>
+                        <thead><tr><th>NOME / RAZÃO</th><th>CPF/CNPJ</th><th>CONTATO</th><th>E-MAIL</th><th>ENDEREÇO</th><th>AÇÕES</th></tr></thead>
                         <tbody id="listaClientes"></tbody>
                     </table>
                 </div>
@@ -106,24 +107,24 @@
                     <h2>LANÇAR NOVA O.S.</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
-                        <div class="campo"><label>Placa do Caminhão</label><input type="text" id="os_placa" placeholder="ABC-1234"></div>
-                        <div class="campo"><label>Mecânico Responsável</label>
+                        <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
+                        <div class="campo"><label>Mecânico</label>
                             <select id="os_mecanico">
                                 <option value="Abel Moreira">Abel Moreira</option>
                                 <option value="Igor">Igor</option>
                             </select>
                         </div>
-                        <div class="campo"><label>Valor Total R$</label><input type="number" id="os_valor" step="0.01"></div>
+                        <div class="campo"><label>Valor R$</label><input type="number" id="os_valor" step="0.01"></div>
                     </div>
-                    <div class="campo"><label>Descrição do Serviço / Peças</label><textarea id="os_desc" rows="3"></textarea></div>
+                    <div class="campo"><label>Descrição do Serviço</label><textarea id="os_desc" rows="2"></textarea></div>
                     <button class="btn btn-green" onclick="salvarOS()">REGISTRAR SERVIÇO</button>
                 </div>
             </section>
 
             <section id="aba_caixa" class="tab-content">
-                <div class="card" style="text-align:center; background: #111827;">
-                    <label style="font-size:0.8rem; color:#9ca3af">VALORES PENDENTES</label>
-                    <h1 id="total_pendente" style="color:#ef4444; font-size: 2.5rem; margin: 10px 0;">R$ 0,00</h1>
+                <div class="card" style="text-align:center;">
+                    <label>TOTAL PENDENTE</label>
+                    <h1 id="total_pendente" style="color:#ef4444; font-size: 2rem;">R$ 0,00</h1>
                 </div>
                 <div class="tabela-wrap">
                     <table>
@@ -132,7 +133,6 @@
                     </table>
                 </div>
             </section>
-
         </main>
     </div>
 
@@ -152,13 +152,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- CONTROLE DE ACESSO ---
+        // --- LOGIN ---
         window.logar = () => {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            if(u.toLowerCase() === "larissa" && p === "8489") {
-                localStorage.setItem('lp_login', 'ok'); location.reload();
-            } else alert("Acesso negado!");
+            if(u.toLowerCase() === "larissa" && p === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Acesso negado!");
         };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
@@ -168,50 +166,91 @@
             document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
         };
 
-        // --- CLIENTES ---
+        // --- FUNÇÕES CLIENTES ---
         window.salvarCliente = async () => {
-            const nome = document.getElementById('cl_nome').value;
-            if(!nome) return alert("Nome é obrigatório!");
-            await addDoc(collection(db, "clientes"), {
-                nome: nome, doc: document.getElementById('cl_doc').value,
-                tel: document.getElementById('cl_tel').value, cidade: document.getElementById('cl_cidade').value
-            });
-            alert("Cliente salvo!");
-            document.querySelectorAll('#aba_cliente input').forEach(i => i.value = "");
+            const id = document.getElementById('cl_id').value;
+            const dados = {
+                nome: document.getElementById('cl_nome').value,
+                doc: document.getElementById('cl_doc').value,
+                tel: document.getElementById('cl_tel').value,
+                email: document.getElementById('cl_email').value,
+                endereco: document.getElementById('cl_endereco').value
+            };
+
+            if(!dados.nome) return alert("O Nome/Razão Social é obrigatório!");
+
+            try {
+                if(id) {
+                    await updateDoc(doc(db, "clientes", id), dados);
+                    alert("Dados do cliente atualizados!");
+                } else {
+                    await addDoc(collection(db, "clientes"), dados);
+                    alert("Novo cliente cadastrado!");
+                }
+                limparFormCliente();
+            } catch (e) { alert("Erro ao salvar!"); }
         };
 
-        window.excluirCliente = async (id) => { if(confirm("Deseja remover?")) await deleteDoc(doc(db, "clientes", id)); };
+        window.prepararEdicao = (id, nome, doc, tel, email, endereco) => {
+            document.getElementById('cl_id').value = id;
+            document.getElementById('cl_nome').value = nome;
+            document.getElementById('cl_doc').value = doc;
+            document.getElementById('cl_tel').value = tel;
+            document.getElementById('cl_email').value = email;
+            document.getElementById('cl_endereco').value = endereco;
+            
+            document.getElementById('titulo-form-cliente').innerText = "EDITANDO CLIENTE";
+            document.getElementById('btn-salvar-cliente').innerText = "ATUALIZAR DADOS";
+            document.getElementById('btn-cancelar-edit').style.display = "block";
+            window.scrollTo(0,0);
+        };
 
-        // --- SERVIÇOS (OS) ---
+        window.limparFormCliente = () => {
+            document.getElementById('cl_id').value = "";
+            document.querySelectorAll('#aba_cliente input').forEach(i => i.value = "");
+            document.getElementById('titulo-form-cliente').innerText = "CADASTRAR CLIENTE";
+            document.getElementById('btn-salvar-cliente').innerText = "SALVAR CLIENTE";
+            document.getElementById('btn-cancelar-edit').style.display = "none";
+        };
+
+        window.excluirCliente = async (id) => { if(confirm("Remover este cliente permanentemente?")) await deleteDoc(doc(db, "clientes", id)); };
+
+        // --- FUNÇÕES SERVIÇOS ---
         window.salvarOS = async () => {
             const cliente = document.getElementById('os_cliente').value;
             const valor = parseFloat(document.getElementById('os_valor').value || 0);
-            if(!cliente || valor <= 0) return alert("Preencha o cliente e o valor!");
+            if(!cliente || valor <= 0) return alert("Selecione o cliente e informe o valor!");
 
             await addDoc(collection(db, "servicos"), {
-                cliente: cliente,
-                placa: document.getElementById('os_placa').value,
+                cliente, placa: document.getElementById('os_placa').value,
                 mecanico: document.getElementById('os_mecanico').value,
-                valor: valor,
-                desc: document.getElementById('os_desc').value,
-                status: 'pendente',
-                data: new Date().toLocaleDateString('pt-BR')
+                valor, desc: document.getElementById('os_desc').value,
+                status: 'pendente', data: new Date().toLocaleDateString('pt-BR')
             });
-            alert("Serviço registrado com sucesso!");
-            document.getElementById('os_placa').value = ""; document.getElementById('os_valor').value = ""; document.getElementById('os_desc').value = "";
+            alert("Serviço registrado!");
             abrirAba({currentTarget: document.querySelectorAll('.tab-link')[2]}, 'aba_caixa');
         };
 
         window.receberPagamento = async (id) => { if(confirm("Confirmar recebimento?")) await updateDoc(doc(db, "servicos", id), { status: 'pago' }); };
 
-        // --- SYNC REALTIME ---
+        // --- ATUALIZAÇÃO EM TEMPO REAL ---
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
             const lista = document.getElementById('listaClientes');
             const select = document.getElementById('os_cliente');
             lista.innerHTML = ""; select.innerHTML = '<option value="">Selecione o Cliente...</option>';
             snap.docs.forEach(d => {
                 const c = d.data();
-                lista.innerHTML += `<tr><td><b>${c.nome.toUpperCase()}</b></td><td>${c.doc}</td><td>${c.tel}</td><td>${c.cidade}</td><td><button class="btn-red-sm" onclick="excluirCliente('${d.id}')">X</button></td></tr>`;
+                lista.innerHTML += `<tr>
+                    <td><b>${c.nome.toUpperCase()}</b></td>
+                    <td>${c.doc || '-'}</td>
+                    <td>${c.tel || '-'}</td>
+                    <td>${c.email || '-'}</td>
+                    <td>${c.endereco || '-'}</td>
+                    <td>
+                        <button class="btn-edit-sm" onclick="prepararEdicao('${d.id}','${c.nome}','${c.doc}','${c.tel}','${c.email}','${c.endereco}')">EDITAR</button>
+                        <button class="btn-red-sm" onclick="excluirCliente('${d.id}')">X</button>
+                    </td>
+                </tr>`;
                 select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
