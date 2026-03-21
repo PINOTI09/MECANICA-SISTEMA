@@ -3,33 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mecânica Linha Pesada | Sistema Gestão</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <title>Mecânica Linha Pesada | Gestão</title>
     
     <style>
+        /* Estilos de Base */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 13px; }
+        body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; }
         
+        /* Cabeçalho Fixo */
         header { 
             background: #1c1f23; padding: 12px; border-bottom: 3px solid #3b82f6; 
             display: flex; justify-content: space-between; align-items: center;
             position: sticky; top: 0; z-index: 1001;
         }
         .logo h1 { font-size: 0.9rem; color: #fff; text-transform: uppercase; }
-        .logo span { color: #3b82f6; font-size: 0.65rem; font-weight: bold; display: block; }
+        .logo span { color: #3b82f6; font-size: 0.65rem; font-weight: bold; }
 
+        /* Menu de 9 Abas com Scroll Lateral */
         nav { 
             background: #1c1f23; display: flex; overflow-x: auto; white-space: nowrap;
             position: sticky; top: 58px; z-index: 1000; border-bottom: 1px solid #333;
-            scrollbar-width: none;
+            scrollbar-width: none; /* Firefox */
         }
-        nav::-webkit-scrollbar { display: none; }
+        nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
         .tab-link { 
-            padding: 15px 18px; cursor: pointer; font-weight: bold; font-size: 0.7rem; 
+            padding: 15px 20px; cursor: pointer; font-weight: bold; font-size: 0.7rem; 
             color: #9ca3af; text-transform: uppercase; border-bottom: 3px solid transparent; flex-shrink: 0;
         }
-        .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
+        .tab-link.active { 
+            color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); 
+        }
 
         .container { padding: 15px; max-width: 1200px; margin: auto; }
         .tab-content { display: none; }
@@ -38,30 +42,19 @@
 
         .card { background: #1c1f23; padding: 15px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 10px; }
         h2 { font-size: 0.85rem; margin-bottom: 12px; color: #3b82f6; border-left: 3px solid #3b82f6; padding-left: 8px; text-transform: uppercase; }
-        
-        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
-        .campo { display: flex; flex-direction: column; margin-bottom: 8px; }
-        .campo label { font-size: 0.6rem; color: #9ca3af; margin-bottom: 3px; font-weight: 600; }
-        
-        input, select, textarea { padding: 10px; border: 1px solid #374151; border-radius: 6px; background: #111827; color: #fff; font-size: 0.9rem; width: 100%; outline: none; }
 
         .btn { padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; font-size: 0.75rem; }
         .btn-blue { background: #3b82f6; color: #fff; }
-        .btn-green { background: #10b981; color: #fff; }
-        .btn-red { background: #ef4444; color: #fff; }
-
-        .tabela-itens { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        .tabela-itens th { font-size: 0.6rem; color: #3b82f6; text-align: left; padding: 4px; }
         
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 10000; }
     </style>
 </head>
-<body onload="verificarLogin(); setarDataHoje();">
+<body onload="verificarLogin()">
 
     <div id="tela-login">
-        <div class="card" style="width: 85%; max-width: 300px; text-align: center; border: 1px solid #3b82f6;">
+        <div class="card" style="width: 85%; max-width: 300px; text-align: center;">
             <h2>LINHA PESADA</h2>
-            <input type="password" id="pass" placeholder="Senha" style="text-align:center">
+            <input type="password" id="pass" placeholder="Senha" style="padding:10px; width:100%; margin-top:10px; background:#111827; color:#fff; border:1px solid #333; border-radius:6px;">
             <button onclick="logar()" class="btn btn-blue" style="margin-top:15px">ENTRAR</button>
         </div>
     </div>
@@ -75,143 +68,51 @@
             <button onclick="logout()" style="background:none; border:none; color:#ef4444; font-weight:bold; font-size:0.7rem">SAIR</button>
         </header>
 
-        <nav id="nav-abas">
-            <div class="tab-link active" onclick="abrirAba(event, 'aba_nova_os')">1. Nova O.S.</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_cad_cliente')">2. Cad. Cliente</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">3. Clientes</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico O.S.</div>
+        <nav>
+            <div class="tab-link active" onclick="abrirAba(event, 'aba_cad_cliente')">1. Cadastro</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">2. Clientes</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_nova_os')">3. Nova O.S.</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_financeiro')">5. Financeiro</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_devedores')">6. Devedores</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_mecanico')">7. Mecânico</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_estoque')">8. Estoque</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_config')">9. Config</div>
         </nav>
 
         <main class="container">
-            <section id="aba_nova_os" class="tab-content active">
-                <div class="card">
-                    <h2>Gerar Ordem de Serviço</h2>
-                    <div class="grid-form">
-                        <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
-                        <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
-                        <div class="campo"><label>KM</label><input type="number" id="os_km"></div>
-                        <div class="campo"><label>Mecânico</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
-                        <div class="campo"><label>Data Início</label><input type="date" id="os_data"></div>
-                        <div class="campo"><label>Vencimento</label><input type="date" id="os_vencimento"></div>
-                    </div>
-                    <table class="tabela-itens">
-                        <thead><tr><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th></tr></thead>
-                        <tbody id="corpo-itens"></tbody>
-                    </table>
-                    <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none; margin-bottom:10px" onclick="adicionarLinha()">+ ADICIONAR ITEM</button>
-                    <div class="grid-form">
-                        <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
-                        <div class="campo"><label>TOTAL FINAL</label><input type="text" id="os_total" readonly style="color:#10b981; font-weight:bold; font-size:1.1rem"></div>
-                    </div>
-                    <button class="btn btn-green" style="margin-top:10px" onclick="gerarPDF()">GERAR PDF PROFISSIONAL</button>
-                </div>
-            </section>
-
-            <section id="aba_cad_cliente" class="tab-content"><div class="card"><h2>Cadastro</h2><div class="grid-form"><input type="text" id="cl_nome" placeholder="Nome"><input type="text" id="cl_doc" placeholder="CPF/CNPJ"></div><button class="btn btn-blue" onclick="salvarCliente()">Salvar</button></div></section>
-            <section id="aba_clientes" class="tab-content"><div id="listaClientes"></div></section>
-            <section id="aba_hist_os" class="tab-content"><div id="historicoOS"></div></section>
-            <section id="aba_financeiro" class="tab-content"><div class="card"><h2>Financeiro</h2><h1 id="total_recebido">R$ 0,00</h1></div></section>
-            <section id="aba_devedores" class="tab-content"><div id="listaDevedores"></div></section>
+            <section id="aba_cad_cliente" class="tab-content active"><div class="card"><h2>Aba 1: Cadastro de Clientes</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_clientes" class="tab-content"><div class="card"><h2>Aba 2: Lista de Clientes</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_nova_os" class="tab-content"><div class="card"><h2>Aba 3: Nova O.S.</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_hist_os" class="tab-content"><div class="card"><h2>Aba 4: Histórico</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_financeiro" class="tab-content"><div class="card"><h2>Aba 5: Financeiro</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_devedores" class="tab-content"><div class="card"><h2>Aba 6: Devedores</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_mecanico" class="tab-content"><div class="card"><h2>Aba 7: Mecânicos</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_estoque" class="tab-content"><div class="card"><h2>Aba 8: Estoque</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_config" class="tab-content"><div class="card"><h2>Aba 9: Configurações</h2><p>Conteúdo em breve...</p></div></section>
         </main>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // CONFIGURAÇÃO FIREBASE
-        const firebaseConfig = { apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg", authDomain: "mecanica-linha-pesada.firebaseapp.com", projectId: "mecanica-linha-pesada", storageBucket: "mecanica-linha-pesada.firebasestorage.app", messagingSenderId: "1067537543837", appId: "1:1067537543837:web:b3247ef2b1907f395f1a74" };
-        const app = initializeApp(firebaseConfig); const db = getFirestore(app);
-
-        // LOGIN E ABAS
-        window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Erro!"); };
-        window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
-        window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
-        window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); };
-        window.setarDataHoje = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; adicionarLinha(); };
-
-        // LÓGICA DE ITENS
-        window.adicionarLinha = () => {
-            const tr = document.createElement('tr'); tr.className = 'linha-item';
-            tr.innerHTML = `<td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td><td><input type="text" class="os-desc"></td><td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td><td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>`;
-            document.getElementById('corpo-itens').appendChild(tr);
-        };
-
-        window.calcTotal = () => {
-            let t = 0; document.querySelectorAll('.linha-item').forEach(l => { t += (parseFloat(l.querySelector('.os-qtd').value || 0) * parseFloat(l.querySelector('.os-unit').value || 0)); });
-            const d = parseFloat(document.getElementById('os_desconto').value || 0);
-            document.getElementById('os_total').value = (t - d).toFixed(2);
-        };
-
-        // --- FUNÇÃO DO PDF (VERSÃO LIMPA E BONITA) ---
-        window.gerarPDF = () => {
-            const { jsPDF } = window.jspdf;
-            const docPdf = new jsPDF();
-            
-            const nomeCliente = document.getElementById('os_cliente').value;
-            const placa = document.getElementById('os_placa').value;
-            const dataServ = document.getElementById('os_data').value;
-            const km = document.getElementById('os_km').value;
-            const mecanico = document.getElementById('os_mecanico').value;
-
-            // Cabeçalho
-            docPdf.setFontSize(22); docPdf.setTextColor(40);
-            docPdf.text("Mecânica Linha Pesada", 14, 20);
-            docPdf.setFontSize(10); docPdf.text("CNPJ: 48.794.084/0001-09", 14, 26);
-            docPdf.text("Fone: (Insira seu Telefone Aqui)", 14, 31);
-            
-            docPdf.setDrawColor(59, 130, 246); docPdf.setLineWidth(1); docPdf.line(14, 35, 196, 35);
-
-            // Informações da OS
-            docPdf.setFontSize(12); docPdf.text(`ORDEM DE SERVIÇO - DATA: ${dataServ}`, 14, 45);
-            docPdf.setFontSize(10);
-            docPdf.text(`CLIENTE: ${nomeCliente}`, 14, 55);
-            docPdf.text(`PLACA: ${placa} | KM: ${km}`, 14, 61);
-            docPdf.text(`MECÂNICO: ${mecanico}`, 14, 67);
-
-            // Tabela de Itens
-            const itensPdf = [];
-            document.querySelectorAll('.linha-item').forEach(l => {
-                const qtd = l.querySelector('.os-qtd').value;
-                const unit = l.querySelector('.os-unit').value;
-                const totalLinha = (qtd * unit).toFixed(2);
-                itensPdf.push([l.querySelector('.os-tipo').value, l.querySelector('.os-desc').value, qtd, `R$ ${unit}`, `R$ ${totalLinha}`]);
-            });
-
-            docPdf.autoTable({
-                startY: 75,
-                head: [['TIPO', 'DESCRIÇÃO', 'QTD', 'UNITÁRIO', 'TOTAL']],
-                body: itensPdf,
-                theme: 'striped',
-                headStyles: { fillColor: [59, 130, 246] },
-                styles: { fontSize: 9 }
-            });
-
-            // Totais
-            const finalY = docPdf.lastAutoTable.finalY + 10;
-            docPdf.setFontSize(11);
-            docPdf.text(`Desconto: R$ ${parseFloat(document.getElementById('os_desconto').value).toFixed(2)}`, 140, finalY);
-            docPdf.setFontSize(14); docPdf.setTextColor(16, 185, 129); // Verde
-            docPdf.text(`TOTAL GERAL: R$ ${document.getElementById('os_total').value}`, 140, finalY + 8);
-
-            // Rodapé/Assinatura
-            docPdf.setTextColor(100); docPdf.setFontSize(8);
-            docPdf.text("__________________________________________", 14, finalY + 30);
-            docPdf.text("Assinatura do Cliente", 14, finalY + 35);
-            docPdf.text("Documento gerado pelo Sistema Linha Pesada", 14, 285);
-
-            docPdf.save(`OS_${placa}_${dataServ}.pdf`);
-        };
-
-        // SYNC FIREBASE (Simplificado para manter o foco no PDF)
-        onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
-            const s = document.getElementById('os_cliente'); s.innerHTML = "";
-            snap.docs.forEach(d => { s.innerHTML += `<option value="${d.data().nome}">${d.data().nome}</option>`; });
-        });
+    <script>
+        function logar() {
+            if(document.getElementById('pass').value === "8489") {
+                localStorage.setItem('lp_login', 'ok');
+                location.reload();
+            } else { alert("Senha incorreta!"); }
+        }
+        function logout() { localStorage.removeItem('lp_login'); location.reload(); }
+        function verificarLogin() {
+            if(localStorage.getItem('lp_login')) {
+                document.getElementById('tela-login').style.display = 'none';
+                document.getElementById('sistema').style.display = 'block';
+            }
+        }
+        function abrirAba(e, id) {
+            document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            e.currentTarget.classList.add('active');
+            window.scrollTo(0,0);
+        }
     </script>
 </body>
 </html>
