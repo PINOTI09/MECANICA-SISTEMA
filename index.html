@@ -60,7 +60,7 @@
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 10000; }
     </style>
 </head>
-<body onload="verificarLogin(); setarDataHoje();">
+<body onload="verificarLogin(); setarDatasIniciais();">
 
     <div id="tela-login">
         <div class="card" style="width: 85%; max-width: 300px; text-align: center;">
@@ -119,8 +119,8 @@
                         <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
                         <div class="campo"><label>KM</label><input type="number" id="os_km"></div>
                         <div class="campo"><label>Mecânico Responsável</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
-                        <div class="campo"><label>Data</label><input type="date" id="os_data"></div>
-                        <div class="campo"><label>Vencimento Pagto.</label><input type="date" id="os_vencimento"></div>
+                        <div class="campo"><label>Data Emissão</label><input type="date" id="os_data"></div>
+                        <div class="campo"><label>Vencimento (15 Dias)</label><input type="date" id="os_vencimento"></div>
                     </div>
                     <table class="tabela-itens">
                         <thead><tr><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th></tr></thead>
@@ -128,7 +128,7 @@
                     </table>
                     <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none; margin-bottom:10px" onclick="adicionarLinha()">+ ADICIONAR ITEM</button>
                     
-                    <div class="campo"><label>Observações do Serviço</label><textarea id="os_obs" rows="2" placeholder="Ex: Problema no sistema de freios..."></textarea></div>
+                    <div class="campo"><label>Observações do Serviço</label><textarea id="os_obs" rows="2" placeholder="Ex: Detalhes técnicos..."></textarea></div>
 
                     <div class="grid-form">
                         <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
@@ -149,7 +149,6 @@
     </div>
 
     <script>
-        // MÁSCARAS AUTOMÁTICAS
         function mascaraDoc(i) {
             let v = i.value.replace(/\D/g, '');
             if (v.length <= 11) {
@@ -190,14 +189,22 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // FUNÇÕES GERAIS
         window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha Errada!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
         window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); window.scrollTo(0,0); };
-        window.setarDataHoje = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; adicionarLinha(); };
+        
+        // DATAS AUTOMÁTICAS (HOJE + 15 DIAS)
+        window.setarDatasIniciais = () => { 
+            const hoje = new Date();
+            const venc = new Date();
+            venc.setDate(hoje.getDate() + 15);
+            
+            document.getElementById('os_data').value = hoje.toISOString().split('T')[0];
+            document.getElementById('os_vencimento').value = venc.toISOString().split('T')[0];
+            adicionarLinha(); 
+        };
 
-        // CÁLCULOS OC
         window.adicionarLinha = () => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
             tr.innerHTML = `<td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td><td><input type="text" class="os-desc"></td><td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td><td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>`;
@@ -209,7 +216,6 @@
             document.getElementById('os_total').value = (t - d).toFixed(2);
         };
 
-        // FIREBASE SALVAR
         window.salvarCliente = async () => {
             const nome = document.getElementById('cl_nome').value;
             if(!nome) return alert("Digite o nome!");
@@ -217,7 +223,7 @@
                 nome, doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value,
                 end: document.getElementById('cl_end').value, bairro: document.getElementById('cl_bairro').value, cidade: document.getElementById('cl_cidade').value
             });
-            alert("Cliente Cadastrado!");
+            alert("Cliente Salvo!");
             document.querySelectorAll('#aba_cad_cliente input').forEach(i => i.value="");
         };
 
@@ -233,35 +239,30 @@
                 itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente'
             };
             await addDoc(collection(db, "ordens"), dados);
-            alert("OC Salva no Banco de Dados!");
+            alert("OC Salva com Sucesso!");
         };
 
-        // PDF COMPLETO
         window.gerarPDF = async () => {
             const { jsPDF } = window.jspdf;
             const docPDF = new jsPDF();
             const nomeCl = document.getElementById('os_cliente').value;
-            
-            // Busca dados do cliente para o PDF
             const q = query(collection(db, "clientes"), where("nome", "==", nomeCl));
             const snapCl = await getDocs(q);
             let dCl = { doc: '', tel: '', end: '', bairro: '', cidade: '' };
             snapCl.forEach(d => dCl = d.data());
 
-            // Cabeçalho Empresa
             docPDF.setFontSize(16); docPDF.setTextColor(59, 130, 246);
             docPDF.text("MECÂNICA LINHA PESADA", 105, 15, { align: "center" });
             docPDF.setFontSize(9); docPDF.setTextColor(100);
-            docPDF.text("CNPJ: 48.794.084/0001-09 | Fone: (seu telefone aqui)", 105, 21, { align: "center" });
+            docPDF.text("CNPJ: 48.794.084/0001-09", 105, 21, { align: "center" });
             docPDF.line(15, 25, 195, 25);
 
-            // Bloco Cliente e Veículo
             docPDF.setFontSize(10); docPDF.setTextColor(0);
             docPDF.text("DADOS DO CLIENTE", 15, 33);
             docPDF.setFontSize(9);
             docPDF.text(`Nome: ${nomeCl}`, 15, 39);
             docPDF.text(`CPF/CNPJ: ${dCl.doc || '-'}`, 15, 44);
-            docPDF.text(`End: ${dCl.end || '-'}, ${dCl.bairro || '-'}`, 15, 49);
+            docPDF.text(`Endereço: ${dCl.end || '-'}, ${dCl.bairro || '-'}`, 15, 49);
             docPDF.text(`Fone: ${dCl.tel || '-'}`, 15, 54);
 
             docPDF.setFontSize(10);
@@ -270,9 +271,9 @@
             docPDF.text(`Placa: ${document.getElementById('os_placa').value.toUpperCase()}`, 120, 39);
             docPDF.text(`KM: ${document.getElementById('os_km').value}`, 120, 44);
             docPDF.text(`Mecânico: ${document.getElementById('os_mecanico').value}`, 120, 49);
-            docPDF.text(`Data: ${document.getElementById('os_data').value.split('-').reverse().join('/')}`, 120, 54);
+            docPDF.text(`Emissão: ${document.getElementById('os_data').value.split('-').reverse().join('/')}`, 120, 54);
+            docPDF.text(`Vencimento: ${document.getElementById('os_vencimento').value.split('-').reverse().join('/')}`, 120, 59);
 
-            // Itens
             const corpo = [];
             document.querySelectorAll('.linha-item').forEach(l => {
                 const sub = (l.querySelector('.os-qtd').value * l.querySelector('.os-unit').value).toFixed(2);
@@ -280,33 +281,23 @@
             });
 
             docPDF.autoTable({
-                startY: 62,
+                startY: 65,
                 head: [['TIPO', 'DESCRIÇÃO', 'QTD', 'UNIT', 'SUBTOTAL']],
                 body: corpo,
                 theme: 'grid',
                 headStyles: { fillColor: [59, 130, 246] }
             });
 
-            // Rodapé e Totais
             let finalY = docPDF.lastAutoTable.finalY + 10;
-            if(document.getElementById('os_obs').value) {
-                docPDF.setFontSize(9);
-                docPDF.text("Observações:", 15, finalY);
-                docPDF.text(document.getElementById('os_obs').value, 15, finalY + 5);
-                finalY += 15;
-            }
-
             docPDF.setFontSize(12);
-            docPDF.text(`TOTAL: R$ ${document.getElementById('os_total').value}`, 145, finalY);
+            docPDF.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 145, finalY);
             
-            // Assinatura
             docPDF.line(15, finalY + 30, 90, finalY + 30);
-            docPDF.text("Assinatura Responsável", 15, finalY + 35);
+            docPDF.text("Assinatura do Responsável", 15, finalY + 35);
             
-            docPDF.save(`OS_${nomeCl}.pdf`);
+            docPDF.save(`OS_LINHAPESADA_${nomeCl}.pdf`);
         };
 
-        // SINCRONIZAÇÃO TEMPO REAL
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
             const list = document.getElementById('listaClientes');
             const select = document.getElementById('os_cliente');
@@ -327,14 +318,12 @@
         onSnapshot(collection(db, "ordens"), (snap) => {
             const hist = document.getElementById('historicoOS');
             const dev = document.getElementById('listaDevedores');
-            let tDev = 0; let tRec = 0;
-            hist.innerHTML = ""; dev.innerHTML = "";
+            let tRec = 0; hist.innerHTML = ""; dev.innerHTML = "";
             snap.docs.forEach(d => {
                 const o = d.data();
-                hist.innerHTML += `<div class="card"><b>${o.cliente}</b> - ${o.placa}<br>R$ ${o.total.toFixed(2)} (${o.status})</div>`;
+                hist.innerHTML += `<div class="card"><b>${o.cliente}</b> - ${o.placa}<br>R$ ${o.total.toFixed(2)}</div>`;
                 if(o.status === 'pendente') {
-                    tDev += o.total;
-                    dev.innerHTML += `<div class="card" style="border-left:5px solid #ef4444"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}<br><button class="btn btn-green" style="padding:5px" onclick="baixar('${d.id}')">RECEBER</button></div>`;
+                    dev.innerHTML += `<div class="card" style="border-left:5px solid #ef4444"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}<br><button class="btn btn-green" onclick="baixar('${d.id}')">BAIXAR</button></div>`;
                 } else tRec += o.total;
             });
             document.getElementById('total_financeiro').innerText = `R$ ${tRec.toFixed(2)}`;
