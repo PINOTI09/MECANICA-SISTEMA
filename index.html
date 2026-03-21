@@ -4,36 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Mecânica Linha Pesada | Gestão</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* Estilos de Base */
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; }
+        body { background-color: #0f1113; color: #e5e7eb; min-height: 100vh; font-size: 14px; padding-bottom: 30px; }
         
-        /* Cabeçalho Fixo */
         header { 
             background: #1c1f23; padding: 12px; border-bottom: 3px solid #3b82f6; 
             display: flex; justify-content: space-between; align-items: center;
             position: sticky; top: 0; z-index: 1001;
         }
         .logo h1 { font-size: 0.9rem; color: #fff; text-transform: uppercase; }
-        .logo span { color: #3b82f6; font-size: 0.65rem; font-weight: bold; }
+        .logo span { color: #3b82f6; font-size: 0.65rem; font-weight: bold; display: block; }
 
-        /* Menu de 9 Abas com Scroll Lateral */
+        /* Menu Deslizante */
         nav { 
             background: #1c1f23; display: flex; overflow-x: auto; white-space: nowrap;
             position: sticky; top: 58px; z-index: 1000; border-bottom: 1px solid #333;
-            scrollbar-width: none; /* Firefox */
+            scrollbar-width: none;
         }
-        nav::-webkit-scrollbar { display: none; } /* Chrome/Safari */
-
+        nav::-webkit-scrollbar { display: none; }
         .tab-link { 
-            padding: 15px 20px; cursor: pointer; font-weight: bold; font-size: 0.7rem; 
+            padding: 15px 18px; cursor: pointer; font-weight: bold; font-size: 0.7rem; 
             color: #9ca3af; text-transform: uppercase; border-bottom: 3px solid transparent; flex-shrink: 0;
         }
-        .tab-link.active { 
-            color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); 
-        }
+        .tab-link.active { color: #3b82f6; border-bottom: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.1); }
 
         .container { padding: 15px; max-width: 1200px; margin: auto; }
         .tab-content { display: none; }
@@ -42,19 +39,30 @@
 
         .card { background: #1c1f23; padding: 15px; border-radius: 12px; border: 1px solid #2d3136; margin-bottom: 10px; }
         h2 { font-size: 0.85rem; margin-bottom: 12px; color: #3b82f6; border-left: 3px solid #3b82f6; padding-left: 8px; text-transform: uppercase; }
+        
+        .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+        .campo { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .campo label { font-size: 0.6rem; color: #9ca3af; margin-bottom: 3px; font-weight: 600; }
+        
+        input, select, textarea { padding: 10px; border: 1px solid #374151; border-radius: 6px; background: #111827; color: #fff; font-size: 0.9rem; width: 100%; outline: none; }
 
         .btn { padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; font-size: 0.75rem; }
         .btn-blue { background: #3b82f6; color: #fff; }
+        .btn-green { background: #10b981; color: #fff; }
+        .btn-red { background: #ef4444; color: #fff; }
+
+        .tabela-itens { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+        .tabela-itens th { font-size: 0.6rem; color: #3b82f6; text-align: left; padding: 4px; }
         
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 10000; }
     </style>
 </head>
-<body onload="verificarLogin()">
+<body onload="verificarLogin(); setarDataHoje();">
 
     <div id="tela-login">
         <div class="card" style="width: 85%; max-width: 300px; text-align: center;">
             <h2>LINHA PESADA</h2>
-            <input type="password" id="pass" placeholder="Senha" style="padding:10px; width:100%; margin-top:10px; background:#111827; color:#fff; border:1px solid #333; border-radius:6px;">
+            <input type="password" id="pass" placeholder="Senha" style="text-align:center; margin-top: 10px;">
             <button onclick="logar()" class="btn btn-blue" style="margin-top:15px">ENTRAR</button>
         </div>
     </div>
@@ -68,11 +76,11 @@
             <button onclick="logout()" style="background:none; border:none; color:#ef4444; font-weight:bold; font-size:0.7rem">SAIR</button>
         </header>
 
-        <nav>
-            <div class="tab-link active" onclick="abrirAba(event, 'aba_cad_cliente')">1. Cadastro</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">2. Clientes</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_nova_os')">3. Nova O.S.</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico</div>
+        <nav id="nav-abas">
+            <div class="tab-link active" onclick="abrirAba(event, 'aba_nova_os')">1. Nova O.S.</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_cad_cliente')">2. Cad. Cliente</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">3. Clientes</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico O.S.</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_financeiro')">5. Financeiro</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_devedores')">6. Devedores</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_mecanico')">7. Mecânico</div>
@@ -81,38 +89,177 @@
         </nav>
 
         <main class="container">
-            <section id="aba_cad_cliente" class="tab-content active"><div class="card"><h2>Aba 1: Cadastro de Clientes</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_clientes" class="tab-content"><div class="card"><h2>Aba 2: Lista de Clientes</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_nova_os" class="tab-content"><div class="card"><h2>Aba 3: Nova O.S.</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_hist_os" class="tab-content"><div class="card"><h2>Aba 4: Histórico</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_financeiro" class="tab-content"><div class="card"><h2>Aba 5: Financeiro</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_devedores" class="tab-content"><div class="card"><h2>Aba 6: Devedores</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_mecanico" class="tab-content"><div class="card"><h2>Aba 7: Mecânicos</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_estoque" class="tab-content"><div class="card"><h2>Aba 8: Estoque</h2><p>Conteúdo em breve...</p></div></section>
-            <section id="aba_config" class="tab-content"><div class="card"><h2>Aba 9: Configurações</h2><p>Conteúdo em breve...</p></div></section>
+            <section id="aba_nova_os" class="tab-content active">
+                <div class="card">
+                    <h2>Gerar Ordem de Serviço</h2>
+                    <div class="grid-form">
+                        <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
+                        <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
+                        <div class="campo"><label>KM</label><input type="number" id="os_km"></div>
+                        <div class="campo"><label>Mecânico</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
+                        <div class="campo"><label>Data Início</label><input type="date" id="os_data"></div>
+                        <div class="campo"><label>Vencimento Pagto.</label><input type="date" id="os_vencimento"></div>
+                    </div>
+                    <table class="tabela-itens">
+                        <thead><tr><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th></tr></thead>
+                        <tbody id="corpo-itens"></tbody>
+                    </table>
+                    <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none; margin-bottom:10px" onclick="adicionarLinha()">+ ADICIONAR ITEM</button>
+                    <div class="grid-form">
+                        <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
+                        <div class="campo"><label>TOTAL FINAL</label><input type="text" id="os_total" readonly style="color:#10b981; font-weight:bold; font-size:1.1rem"></div>
+                    </div>
+                    <div class="grid-form" style="margin-top:10px;">
+                        <button class="btn btn-green" onclick="salvarOS()">SALVAR E GERAR PDF</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="aba_cad_cliente" class="tab-content">
+                <div class="card">
+                    <h2>Novo Cliente</h2>
+                    <div class="grid-form">
+                        <div class="campo"><label>Nome</label><input type="text" id="cl_nome"></div>
+                        <div class="campo"><label>CPF/CNPJ</label><input type="text" id="cl_doc"></div>
+                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel"></div>
+                    </div>
+                    <button class="btn btn-blue" onclick="salvarCliente()">SALVAR CLIENTE</button>
+                </div>
+            </section>
+
+            <section id="aba_clientes" class="tab-content"><div id="listaClientes"></div></section>
+
+            <section id="aba_hist_os" class="tab-content"><div id="historicoOS"></div></section>
+
+            <section id="aba_financeiro" class="tab-content">
+                <div class="card" style="text-align:center">
+                    <label>RECEBIDO (MÊS)</label>
+                    <h1 id="total_financeiro" style="color:#10b981; font-size: 2.2rem;">R$ 0,00</h1>
+                </div>
+            </section>
+
+            <section id="aba_devedores" class="tab-content">
+                <div class="card" style="text-align:center; background:#2d1414">
+                    <label>TOTAL A RECEBER</label>
+                    <h1 id="total_devedores" style="color:#ef4444; font-size: 2.2rem;">R$ 0,00</h1>
+                </div>
+                <div id="listaDevedores"></div>
+            </section>
+
+            <section id="aba_mecanico" class="tab-content"><div class="card"><h2>Produção Mecânicos</h2><p>Em breve...</p></div></section>
+            <section id="aba_estoque" class="tab-content"><div class="card"><h2>Estoque de Peças</h2><p>Em breve...</p></div></section>
+            <section id="aba_config" class="tab-content"><div class="card"><h2>Configurações</h2><p>Em breve...</p></div></section>
         </main>
     </div>
 
-    <script>
-        function logar() {
-            if(document.getElementById('pass').value === "8489") {
-                localStorage.setItem('lp_login', 'ok');
-                location.reload();
-            } else { alert("Senha incorreta!"); }
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg", 
+            authDomain: "mecanica-linha-pesada.firebaseapp.com", 
+            projectId: "mecanica-linha-pesada", 
+            storageBucket: "mecanica-linha-pesada.firebasestorage.app", 
+            messagingSenderId: "1067537543837", 
+            appId: "1:1067537543837:web:b3247ef2b1907f395f1a74" 
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- SISTEMA ---
+        window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Erro!"); };
+        window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
+        window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
+        window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); window.scrollTo(0,0); };
+        window.setarDataHoje = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; adicionarLinha(); };
+
+        // --- O.S. ITENS ---
+        window.adicionarLinha = () => {
+            const tr = document.createElement('tr'); tr.className = 'linha-item';
+            tr.innerHTML = `<td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td><td><input type="text" class="os-desc"></td><td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td><td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>`;
+            document.getElementById('corpo-itens').appendChild(tr);
+        };
+        window.calcTotal = () => {
+            let t = 0; document.querySelectorAll('.linha-item').forEach(l => { t += (parseFloat(l.querySelector('.os-qtd').value || 0) * parseFloat(l.querySelector('.os-unit').value || 0)); });
+            const d = parseFloat(document.getElementById('os_desconto').value || 0);
+            document.getElementById('os_total').value = (t - d).toFixed(2);
+        };
+
+        // --- FIREBASE OPERAÇÕES ---
+        window.salvarCliente = async () => {
+            const nome = document.getElementById('cl_nome').value;
+            if(!nome) return alert("Nome obrigatório");
+            await addDoc(collection(db, "clientes"), { nome, doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value });
+            alert("Salvo!"); document.querySelectorAll('#aba_cad_cliente input').forEach(i => i.value="");
+        };
+
+        window.salvarOS = async () => {
+            const itens = [];
+            document.querySelectorAll('.linha-item').forEach(l => {
+                itens.push({ tipo: l.querySelector('.os-tipo').value, desc: l.querySelector('.os-desc').value, qtd: l.querySelector('.os-qtd').value, unit: l.querySelector('.os-unit').value });
+            });
+            const dadosOS = {
+                cliente: document.getElementById('os_cliente').value,
+                placa: document.getElementById('os_placa').value,
+                km: document.getElementById('os_km').value,
+                mecanico: document.getElementById('os_mecanico').value,
+                data: document.getElementById('os_data').value,
+                vencimento: document.getElementById('os_vencimento').value,
+                itens, total: parseFloat(document.getElementById('os_total').value),
+                status: 'pendente'
+            };
+            await addDoc(collection(db, "ordens"), dadosOS);
+            gerarPDF(dadosOS);
+            alert("O.S. Salva!");
+            location.reload();
+        };
+
+        window.baixarPagamento = async (id) => { if(confirm("Confirmar recebimento?")) await updateDoc(doc(db, "ordens", id), { status: 'pago' }); };
+
+        // --- PDF ---
+        function gerarPDF(dados) {
+            const { jsPDF } = window.jspdf;
+            const docPdf = new jsPDF();
+            docPdf.setFontSize(20); docPdf.text("Mecânica Linha Pesada", 14, 20);
+            docPdf.setFontSize(10); docPdf.text("CNPJ: 48.794.084/0001-09", 14, 26);
+            docPdf.text(`Cliente: ${dados.cliente} | Placa: ${dados.placa}`, 14, 40);
+            const rows = dados.itens.map(i => [i.tipo, i.desc, i.qtd, `R$ ${i.unit}`, `R$ ${(i.qtd*i.unit).toFixed(2)}`]);
+            docPdf.autoTable({ startY: 50, head: [['TIPO', 'DESCRIÇÃO', 'QTD', 'UNIT', 'TOTAL']], body: rows });
+            docPdf.text(`TOTAL GERAL: R$ ${dados.total.toFixed(2)}`, 14, docPdf.lastAutoTable.finalY + 10);
+            docPdf.save(`OS_${dados.placa}.pdf`);
         }
-        function logout() { localStorage.removeItem('lp_login'); location.reload(); }
-        function verificarLogin() {
-            if(localStorage.getItem('lp_login')) {
-                document.getElementById('tela-login').style.display = 'none';
-                document.getElementById('sistema').style.display = 'block';
-            }
-        }
-        function abrirAba(e, id) {
-            document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            e.currentTarget.classList.add('active');
-            window.scrollTo(0,0);
-        }
+
+        // --- REALTIME SYNC ---
+        onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
+            const list = document.getElementById('listaClientes');
+            const select = document.getElementById('os_cliente');
+            list.innerHTML = ""; select.innerHTML = "";
+            snap.docs.forEach(d => {
+                const c = d.data();
+                list.innerHTML += `<div class="card"><b>${c.nome}</b><br><small>${c.tel}</small></div>`;
+                select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+            });
+        });
+
+        onSnapshot(collection(db, "ordens"), (snap) => {
+            const hist = document.getElementById('historicoOS');
+            const dev = document.getElementById('listaDevedores');
+            let tDev = 0; let tRec = 0;
+            hist.innerHTML = ""; dev.innerHTML = "";
+            snap.docs.forEach(d => {
+                const o = d.data();
+                const h = `<div class="card"><b>${o.cliente}</b> - ${o.placa}<br>R$ ${o.total.toFixed(2)} (${o.status})</div>`;
+                hist.innerHTML += h;
+                if(o.status === 'pendente') {
+                    tDev += o.total;
+                    dev.innerHTML += `<div class="card" style="border-left:5px solid red"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}<br><button class="btn btn-green" onclick="baixarPagamento('${d.id}')">BAIXAR</button></div>`;
+                } else { tRec += o.total; }
+            });
+            document.getElementById('total_devedores').innerText = `R$ ${tDev.toFixed(2)}`;
+            document.getElementById('total_financeiro').innerText = `R$ ${tRec.toFixed(2)}`;
+        });
     </script>
 </body>
 </html>
