@@ -19,7 +19,6 @@
         .logo h1 { font-size: 0.9rem; color: #fff; text-transform: uppercase; }
         .logo span { color: #3b82f6; font-size: 0.65rem; font-weight: bold; }
 
-        /* Menu Deslizante com as 9 abas na ordem correta */
         nav { 
             background: #1c1f23; display: flex; overflow-x: auto; white-space: nowrap;
             position: sticky; top: 58px; z-index: 1000; border-bottom: 1px solid #333;
@@ -81,7 +80,7 @@
             <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">2. Clientes</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_nova_os')">3. Nova OC</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico de OC</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_financeiro')">5. Financeiro</div>
+            <div class="tab-link" onclick="aba_financeiro" onclick="abrirAba(event, 'aba_financeiro')">5. Financeiro</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_devedores')">6. Devedores</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_mecanico')">7. Mecânico</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_estoque')">8. Estoque</div>
@@ -94,9 +93,8 @@
                     <h2>Informações do Cliente</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc"></div>
-                        <div class="campo"><label>Inscrição Estadual</label><input type="text" id="cl_ie"></div>
-                        <div class="campo"><label>WhatsApp / Telefone</label><input type="text" id="cl_tel"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" maxlength="18" placeholder="000.000.000-00" oninput="mascaraDoc(this)"></div>
+                        <div class="campo"><label>WhatsApp / Telefone</label><input type="text" id="cl_tel" maxlength="15" placeholder="(00) 00000-0000" oninput="mascaraTel(this)"></div>
                         <div class="campo"><label>Endereço / Nº</label><input type="text" id="cl_end"></div>
                         <div class="campo"><label>Bairro</label><input type="text" id="cl_bairro"></div>
                         <div class="campo"><label>Cidade / UF</label><input type="text" id="cl_cidade"></div>
@@ -168,6 +166,35 @@
         </main>
     </div>
 
+    <script>
+        // FUNÇÕES DE MÁSCARA AUTOMÁTICA
+        function mascaraDoc(i) {
+            let v = i.value.replace(/\D/g, '');
+            if (v.length <= 11) { // CPF
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            } else { // CNPJ
+                v = v.replace(/^(\d{2})(\d)/, '$1.$2');
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                v = v.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            i.value = v;
+        }
+
+        function mascaraTel(i) {
+            let v = i.value.replace(/\D/g, '');
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            if (v.length > 13) {
+                v = v.replace(/(\d{5})(\d)/, '$1-$2');
+            } else {
+                v = v.replace(/(\d{4})(\d)/, '$1-$2');
+            }
+            i.value = v;
+        }
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -210,7 +237,6 @@
             await addDoc(collection(db, "clientes"), {
                 nome, 
                 doc: document.getElementById('cl_doc').value,
-                ie: document.getElementById('cl_ie').value,
                 tel: document.getElementById('cl_tel').value,
                 end: document.getElementById('cl_end').value,
                 bairro: document.getElementById('cl_bairro').value,
@@ -250,7 +276,7 @@
             list.innerHTML = ""; select.innerHTML = "";
             snap.docs.forEach(d => {
                 const c = d.data();
-                list.innerHTML += `<div class="card"><b>${c.nome}</b><br><small>${c.tel} | ${c.cidade}</small></div>`;
+                list.innerHTML += `<div class="card"><b>${c.nome}</b><br><small>${c.doc} | ${c.tel}</small></div>`;
                 select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
