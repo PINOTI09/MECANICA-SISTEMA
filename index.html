@@ -50,7 +50,7 @@
         
         input, select, textarea { padding: 10px; border: 1px solid #374151; border-radius: 6px; background: #111827; color: #fff; font-size: 0.9rem; width: 100%; outline: none; }
 
-        .btn { padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; font-size: 0.75rem; }
+        .btn { padding: 12px; border-radius: 6px; cursor: pointer; font-weight: bold; border: none; text-transform: uppercase; width: 100%; font-size: 0.75rem; margin-top: 5px; }
         .btn-blue { background: #3b82f6; color: #fff; }
         .btn-green { background: #10b981; color: #fff; }
 
@@ -91,7 +91,6 @@
         </nav>
 
         <main class="container">
-            
             <section id="aba_cad_cliente" class="tab-content active">
                 <div class="card">
                     <h2>Informações do Cliente</h2>
@@ -108,7 +107,7 @@
             </section>
 
             <section id="aba_clientes" class="tab-content">
-                <h2>Lista de Clientes Cadastrados</h2>
+                <h2>Clientes Cadastrados</h2>
                 <div id="listaClientes"></div>
             </section>
 
@@ -128,23 +127,29 @@
                         <tbody id="corpo-itens"></tbody>
                     </table>
                     <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none; margin-bottom:10px" onclick="adicionarLinha()">+ ADICIONAR ITEM</button>
+                    
+                    <div class="campo"><label>Observações do Serviço</label><textarea id="os_obs" rows="2" placeholder="Ex: Problema no sistema de freios..."></textarea></div>
+
                     <div class="grid-form">
                         <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
                         <div class="campo"><label>TOTAL DA OC</label><input type="text" id="os_total" readonly style="color:#10b981; font-weight:bold; font-size:1.1rem"></div>
                     </div>
-                    <button class="btn btn-green" style="margin-top:10px" onclick="salvarOS()">SALVAR OC E GERAR PDF</button>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-green" onclick="salvarOS()">SALVAR OC NO SISTEMA</button>
+                        <button class="btn btn-blue" onclick="gerarPDF()">VISUALIZAR PDF</button>
+                    </div>
                 </div>
             </section>
 
             <section id="aba_hist_os" class="tab-content"><div id="historicoOS"></div></section>
             <section id="aba_financeiro" class="tab-content"><div class="card" style="text-align:center"><label>TOTAL RECEBIDO (MÊS)</label><h1 id="total_financeiro" style="color:#10b981; font-size: 2.2rem;">R$ 0,00</h1></div></section>
-            <section id="aba_devedores" class="tab-content"><div class="card" style="text-align:center; background:#2d1414"><label>VALOR TOTAL PENDENTE</label><h1 id="total_devedores" style="color:#ef4444; font-size: 2.2rem;">R$ 0,00</h1></div><div id="listaDevedores"></div></section>
-            <section id="aba_mecanico" class="tab-content"><div id="producaoMecanicos"></div></section>
-            <section id="aba_estoque" class="tab-content"><div class="card"><h2>Entrada de Peças</h2><div class="grid-form"><input type="text" id="est_item" placeholder="Nome da Peça"><input type="number" id="est_qtd" placeholder="Qtd"></div><button class="btn btn-blue" style="margin-top:10px">SALVAR NO ESTOQUE</button></div></section>
+            <section id="aba_devedores" class="tab-content"><div id="listaDevedores"></div></section>
         </main>
     </div>
 
     <script>
+        // MÁSCARAS AUTOMÁTICAS
         function mascaraDoc(i) {
             let v = i.value.replace(/\D/g, '');
             if (v.length <= 11) {
@@ -171,7 +176,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, getDocs, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg", 
@@ -185,12 +190,14 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // FUNÇÕES GERAIS
         window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha Errada!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
         window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); window.scrollTo(0,0); };
         window.setarDataHoje = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; adicionarLinha(); };
 
+        // CÁLCULOS OC
         window.adicionarLinha = () => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
             tr.innerHTML = `<td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td><td><input type="text" class="os-desc"></td><td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td><td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>`;
@@ -202,14 +209,15 @@
             document.getElementById('os_total').value = (t - d).toFixed(2);
         };
 
+        // FIREBASE SALVAR
         window.salvarCliente = async () => {
             const nome = document.getElementById('cl_nome').value;
-            if(!nome) return alert("Digite o nome do cliente!");
+            if(!nome) return alert("Digite o nome!");
             await addDoc(collection(db, "clientes"), {
                 nome, doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value,
                 end: document.getElementById('cl_end').value, bairro: document.getElementById('cl_bairro').value, cidade: document.getElementById('cl_cidade').value
             });
-            alert("Cadastro realizado!");
+            alert("Cliente Cadastrado!");
             document.querySelectorAll('#aba_cad_cliente input').forEach(i => i.value="");
         };
 
@@ -225,12 +233,80 @@
                 itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente'
             };
             await addDoc(collection(db, "ordens"), dados);
-            alert("OC Salva!");
-            location.reload();
+            alert("OC Salva no Banco de Dados!");
         };
 
-        window.baixarPagamento = async (id) => { if(confirm("Confirmar Recebimento?")) await updateDoc(doc(db, "ordens", id), { status: 'pago' }); };
+        // PDF COMPLETO
+        window.gerarPDF = async () => {
+            const { jsPDF } = window.jspdf;
+            const docPDF = new jsPDF();
+            const nomeCl = document.getElementById('os_cliente').value;
+            
+            // Busca dados do cliente para o PDF
+            const q = query(collection(db, "clientes"), where("nome", "==", nomeCl));
+            const snapCl = await getDocs(q);
+            let dCl = { doc: '', tel: '', end: '', bairro: '', cidade: '' };
+            snapCl.forEach(d => dCl = d.data());
 
+            // Cabeçalho Empresa
+            docPDF.setFontSize(16); docPDF.setTextColor(59, 130, 246);
+            docPDF.text("MECÂNICA LINHA PESADA", 105, 15, { align: "center" });
+            docPDF.setFontSize(9); docPDF.setTextColor(100);
+            docPDF.text("CNPJ: 48.794.084/0001-09 | Fone: (seu telefone aqui)", 105, 21, { align: "center" });
+            docPDF.line(15, 25, 195, 25);
+
+            // Bloco Cliente e Veículo
+            docPDF.setFontSize(10); docPDF.setTextColor(0);
+            docPDF.text("DADOS DO CLIENTE", 15, 33);
+            docPDF.setFontSize(9);
+            docPDF.text(`Nome: ${nomeCl}`, 15, 39);
+            docPDF.text(`CPF/CNPJ: ${dCl.doc || '-'}`, 15, 44);
+            docPDF.text(`End: ${dCl.end || '-'}, ${dCl.bairro || '-'}`, 15, 49);
+            docPDF.text(`Fone: ${dCl.tel || '-'}`, 15, 54);
+
+            docPDF.setFontSize(10);
+            docPDF.text("DADOS DO VEÍCULO / SERVIÇO", 120, 33);
+            docPDF.setFontSize(9);
+            docPDF.text(`Placa: ${document.getElementById('os_placa').value.toUpperCase()}`, 120, 39);
+            docPDF.text(`KM: ${document.getElementById('os_km').value}`, 120, 44);
+            docPDF.text(`Mecânico: ${document.getElementById('os_mecanico').value}`, 120, 49);
+            docPDF.text(`Data: ${document.getElementById('os_data').value.split('-').reverse().join('/')}`, 120, 54);
+
+            // Itens
+            const corpo = [];
+            document.querySelectorAll('.linha-item').forEach(l => {
+                const sub = (l.querySelector('.os-qtd').value * l.querySelector('.os-unit').value).toFixed(2);
+                corpo.push([l.querySelector('.os-tipo').value, l.querySelector('.os-desc').value, l.querySelector('.os-qtd').value, `R$ ${l.querySelector('.os-unit').value}`, `R$ ${sub}`]);
+            });
+
+            docPDF.autoTable({
+                startY: 62,
+                head: [['TIPO', 'DESCRIÇÃO', 'QTD', 'UNIT', 'SUBTOTAL']],
+                body: corpo,
+                theme: 'grid',
+                headStyles: { fillColor: [59, 130, 246] }
+            });
+
+            // Rodapé e Totais
+            let finalY = docPDF.lastAutoTable.finalY + 10;
+            if(document.getElementById('os_obs').value) {
+                docPDF.setFontSize(9);
+                docPDF.text("Observações:", 15, finalY);
+                docPDF.text(document.getElementById('os_obs').value, 15, finalY + 5);
+                finalY += 15;
+            }
+
+            docPDF.setFontSize(12);
+            docPDF.text(`TOTAL: R$ ${document.getElementById('os_total').value}`, 145, finalY);
+            
+            // Assinatura
+            docPDF.line(15, finalY + 30, 90, finalY + 30);
+            docPDF.text("Assinatura Responsável", 15, finalY + 35);
+            
+            docPDF.save(`OS_${nomeCl}.pdf`);
+        };
+
+        // SINCRONIZAÇÃO TEMPO REAL
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
             const list = document.getElementById('listaClientes');
             const select = document.getElementById('os_cliente');
@@ -239,9 +315,9 @@
                 const c = d.data();
                 list.innerHTML += `
                     <div class="card card-cliente">
-                        <div class="info-linha"><span class="info-label">Nome / Razão Social</span><span class="info-valor">${c.nome}</span></div>
-                        <div class="info-linha"><span class="info-label">CPF / CNPJ</span><span class="info-valor">${c.doc || 'Não informado'}</span></div>
-                        <div class="info-linha"><span class="info-label">WhatsApp</span><span class="info-valor">${c.tel || 'Não informado'}</span></div>
+                        <div class="info-linha"><span class="info-label">Cliente</span><span class="info-valor">${c.nome}</span></div>
+                        <div class="info-linha"><span class="info-label">CPF/CNPJ</span><span class="info-valor">${c.doc || '-'}</span></div>
+                        <div class="info-linha"><span class="info-label">WhatsApp</span><span class="info-valor">${c.tel || '-'}</span></div>
                         <div class="info-linha"><span class="info-label">Endereço</span><span class="info-valor">${c.end || '-'}, ${c.bairro || '-'} - ${c.cidade || '-'}</span></div>
                     </div>`;
                 select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
@@ -258,12 +334,13 @@
                 hist.innerHTML += `<div class="card"><b>${o.cliente}</b> - ${o.placa}<br>R$ ${o.total.toFixed(2)} (${o.status})</div>`;
                 if(o.status === 'pendente') {
                     tDev += o.total;
-                    dev.innerHTML += `<div class="card" style="border-left:5px solid #ef4444"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}<br><button class="btn btn-green" style="padding:5px; margin-top:5px" onclick="baixarPagamento('${d.id}')">BAIXAR PGTO</button></div>`;
-                } else { tRec += o.total; }
+                    dev.innerHTML += `<div class="card" style="border-left:5px solid #ef4444"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}<br><button class="btn btn-green" style="padding:5px" onclick="baixar('${d.id}')">RECEBER</button></div>`;
+                } else tRec += o.total;
             });
-            document.getElementById('total_devedores').innerText = `R$ ${tDev.toFixed(2)}`;
             document.getElementById('total_financeiro').innerText = `R$ ${tRec.toFixed(2)}`;
         });
+        
+        window.baixar = async (id) => { if(confirm("Confirmar pgto?")) await updateDoc(doc(db, "ordens", id), { status: 'pago' }); };
     </script>
 </body>
 </html>
