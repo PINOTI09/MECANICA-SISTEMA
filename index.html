@@ -139,6 +139,7 @@
                     <div class="campo"><label>Observações</label><textarea id="os_obs" rows="2"></textarea></div>
 
                     <div class="grid-form">
+                        <div class="campo"><label>Entrada R$</label><input type="number" id="os_entrada" value="0" oninput="calcTotal()"></div>
                         <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
                         <div class="campo"><label>TOTAL DA OC</label><input type="text" id="os_total" readonly style="color:#10b981; font-weight:bold; font-size:1.1rem"></div>
                     </div>
@@ -239,7 +240,8 @@
                 t += sub; 
             });
             const d = parseFloat(document.getElementById('os_desconto').value || 0);
-            document.getElementById('os_total').value = (t - d).toFixed(2);
+            const ent = parseFloat(document.getElementById('os_entrada').value || 0); // Puxa entrada
+            document.getElementById('os_total').value = (t - d - ent).toFixed(2); // Subtrai entrada e desconto
         };
 
         window.salvarCliente = async () => {
@@ -262,6 +264,8 @@
                 cliente: document.getElementById('os_cliente').value, placa: document.getElementById('os_placa').value,
                 km: document.getElementById('os_km').value, mecanico: document.getElementById('os_mecanico').value,
                 data: document.getElementById('os_data').value, vencimento: document.getElementById('os_vencimento').value,
+                entrada: parseFloat(document.getElementById('os_entrada').value || 0), // Salva entrada
+                desconto: parseFloat(document.getElementById('os_desconto').value || 0),
                 itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente'
             };
             await addDoc(collection(db, "ordens"), dados);
@@ -315,6 +319,15 @@
             });
 
             let finalY = docPDF.lastAutoTable.finalY + 10;
+            
+            // Adicionando entrada no PDF se houver
+            const entradaVal = parseFloat(document.getElementById('os_entrada').value || 0);
+            if(entradaVal > 0) {
+                docPDF.setFontSize(10);
+                docPDF.text(`Valor de Entrada: R$ ${entradaVal.toFixed(2)}`, 145, finalY);
+                finalY += 7;
+            }
+
             docPDF.setFontSize(12);
             docPDF.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 145, finalY);
             docPDF.line(15, finalY + 30, 90, finalY + 30);
