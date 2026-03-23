@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -64,13 +64,10 @@
         .tabela-financeira th { text-align: left; color: #3b82f6; padding: 10px; border-bottom: 1px solid #333; }
         .tabela-financeira td { padding: 10px; border-bottom: 1px solid #222; }
 
-        .sel-status { background: #111827; color: #fff; padding: 5px; border-radius: 4px; border: 1px solid #333; font-size: 0.65rem; cursor: pointer; }
-
         .tabela-itens { width: 100%; border-collapse: collapse; margin-bottom: 8px; margin-top: 10px; }
         .tabela-itens th { font-size: 0.55rem; color: #3b82f6; text-align: left; padding: 4px; text-transform: uppercase; }
 
-        .btn-remover-linha { background: #ef4444; color: white; border: none; border-radius: 4px; width: 25px; height: 25px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .btn-remover-linha:hover { background: #b91c1c; }
+        .btn-remover-linha { background: #ef4444; color: white; border: none; border-radius: 4px; width: 25px; height: 25px; cursor: pointer; font-weight: bold; }
 
         #modalPDF, #modalBuscaEstoque { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; padding: 20px; flex-direction: column; align-items: center; }
         #pdfViewer { width: 100%; max-width: 800px; height: 85%; background: white; border-radius: 8px; border: none; }
@@ -85,8 +82,6 @@
 
         .card-mecanico { border-top: 4px solid #3b82f6; text-align: left; }
         .card-mecanico h3 { font-size: 1rem; color: #fff; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        .item-mecanico { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.75rem; }
-        .valor-mecanico { font-weight: bold; color: #3b82f6; }
     </style>
 </head>
 <body onload="verificarLogin(); setarDatasIniciais();">
@@ -119,19 +114,16 @@
         <main class="container">
             <section id="aba_cad_cliente" class="tab-content active">
                 <div class="card">
-                    <h2 id="titulo_cad_cliente">Cadastro de Cliente</h2>
-                    <input type="hidden" id="edit_cliente_id">
+                    <h2>Cadastro de Cliente</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" placeholder="000.000.000-00" oninput="mascaraDoc(this)" maxlength="18"></div>
-                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel" placeholder="(00) 00000-0000" oninput="mascaraTel(this)" maxlength="15"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" oninput="mascaraDoc(this)" maxlength="18"></div>
+                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel" oninput="mascaraTel(this)" maxlength="15"></div>
                         <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
                     </div>
                     <div class="campo" style="margin-top:8px"><label>Endereço Completo</label><input type="text" id="cl_end"></div>
-                    <div class="grid-form">
-                        <div class="campo"><label>Cidade / UF</label><input type="text" id="cl_cidade"></div>
-                    </div>
-                    <button id="btn_salvar_cliente" class="btn btn-blue" onclick="salvarCliente()">SALVAR CLIENTE</button>
+                    <div class="grid-form"><div class="campo"><label>Cidade / UF</label><input type="text" id="cl_cidade"></div></div>
+                    <button class="btn btn-blue" onclick="salvarCliente()">SALVAR CLIENTE</button>
                 </div>
             </section>
 
@@ -142,7 +134,7 @@
 
             <section id="aba_nova_os" class="tab-content">
                 <div class="card">
-                    <h2 id="titulo_os">Nova Ordem de Serviço</h2>
+                    <h2>Nova Ordem de Serviço</h2>
                     <input type="hidden" id="edit_os_id">
                     <div class="grid-form">
                         <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
@@ -153,17 +145,15 @@
                         <div class="campo"><label>Vencimento (15d)</label><input type="date" id="os_vencimento" readonly></div>
                     </div>
                     <table class="tabela-itens">
-                        <thead><tr><th>ESTOQUE</th><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th><th>TOTAL</th><th></th></tr></thead>
+                        <thead><tr><th>📦</th><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th><th>TOTAL</th><th></th></tr></thead>
                         <tbody id="corpo-itens"></tbody>
                     </table>
                     <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none" onclick="adicionarLinha()">+ NOVO ITEM</button>
-                    
                     <div class="grid-form" style="margin-top:15px; border-top: 1px solid #333; padding-top: 10px;">
                         <div class="campo"><label>Entrada R$</label><input type="number" id="os_entrada" value="0" oninput="calcTotal()"></div>
                         <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
                         <div class="campo"><label>TOTAL FINAL</label><input type="text" id="os_total" readonly style="color:#10b981; font-weight:bold; font-size:1.1rem"></div>
                     </div>
-
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <button class="btn btn-blue" onclick="salvarOS()">SALVAR OC</button>
                         <button class="btn btn-blue" onclick="visualizarPDF()" style="background:#2563eb">VISUALIZAR PDF</button>
@@ -171,98 +161,32 @@
                 </div>
             </section>
 
-            <section id="aba_hist_os" class="tab-content">
-                <h2>Histórico de Notas</h2>
-                <div id="historicoOS"></div>
-            </section>
-
-            <section id="aba_financeiro" class="tab-content">
-                <div class="card">
-                    <h2>Controle Financeiro Geral</h2>
-                    <div style="overflow-x: auto;">
-                        <table class="tabela-financeira">
-                            <thead>
-                                <tr><th>Nº OC</th><th>CLIENTE</th><th>VENCIMENTO</th><th>VALOR</th><th>STATUS</th></tr>
-                            </thead>
-                            <tbody id="corpo-financeiro"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-
-            <section id="aba_devedores" class="tab-content">
-                <h2>Contas Pendentes</h2>
-                <div class="resumo-devedores">
-                    <h3>Total Bruto Pendente</h3>
-                    <div class="total-valor" id="totalBrutoDevedores">R$ 0,00</div>
-                </div>
-                <div id="listaDevedores"></div>
-            </section>
-
-            <section id="aba_mecanicos" class="tab-content">
-                <h2>Resumo por Mecânico (Total Histórico)</h2>
-                <div id="lista-cards-mecanicos" style="display: grid; grid-template-columns: 1fr; gap: 15px;"></div>
-            </section>
-
+            <section id="aba_hist_os" class="tab-content"><h2>Histórico de Notas</h2><div id="historicoOS"></div></section>
+            <section id="aba_financeiro" class="tab-content"><h2>Financeiro</h2><table class="tabela-financeira"><thead><tr><th>OC</th><th>CLIENTE</th><th>VALOR</th><th>STATUS</th></tr></thead><tbody id="corpo-financeiro"></tbody></table></section>
+            <section id="aba_devedores" class="tab-content"><div class="resumo-devedores"><h3>Pendente</h3><div class="total-valor" id="totalBrutoDevedores">R$ 0,00</div></div><div id="listaDevedores"></div></section>
+            <section id="aba_mecanicos" class="tab-content"><h2>Resumo por Mecânico</h2><div id="lista-cards-mecanicos"></div></section>
             <section id="aba_estoque" class="tab-content">
-                <div class="card" style="border-top: 4px solid #10b981;">
-                    <h2>Cadastrar Peça no Estoque</h2>
+                <div class="card">
+                    <h2>Estoque</h2>
                     <div class="grid-form">
-                        <div class="campo"><label>Descrição da Peça</label><input type="text" id="est_desc"></div>
-                        <div class="campo"><label>Unidade (Ex: UN, KG, PAR)</label><input type="text" id="est_unid" placeholder="UN"></div>
-                        <div class="campo"><label>Preço Unitário R$</label><input type="number" id="est_preco" step="0.01"></div>
-                        <div class="campo"><label>Quantidade Inicial</label><input type="number" id="est_qtd" value="0"></div>
+                        <div class="campo"><label>Descrição</label><input type="text" id="est_desc"></div>
+                        <div class="campo"><label>Preço R$</label><input type="number" id="est_preco"></div>
+                        <div class="campo"><label>Qtd</label><input type="number" id="est_qtd"></div>
                     </div>
                     <button class="btn btn-green" onclick="salvarEstoque()">SALVAR NO ESTOQUE</button>
                 </div>
-                <h2>Itens em Estoque</h2>
                 <div id="listaEstoque"></div>
             </section>
         </main>
     </div>
 
-    <div id="modalPDF">
-        <h2 style="color:white; margin-bottom:10px;">Visualização da OC</h2>
-        <iframe id="pdfViewer"></iframe>
-        <button class="btn btn-red" style="width:200px; margin-top:10px;" onclick="document.getElementById('modalPDF').style.display='none'">FECHAR</button>
-    </div>
-
-    <div id="modalBuscaEstoque">
-        <div class="busca-container">
-            <h2 style="color:white">Escolher do Estoque</h2>
-            <input type="text" id="filtroEstoque" placeholder="Pesquisar peça..." oninput="filtrarModalEstoque()" style="margin-bottom:15px">
-            <div id="corpoBuscaEstoque"></div>
-            <button class="btn btn-red" onclick="document.getElementById('modalBuscaEstoque').style.display='none'">CANCELAR</button>
-        </div>
-    </div>
-
-    <script>
-        function mascaraDoc(i) {
-            let v = i.value.replace(/\D/g, ''); 
-            if (v.length <= 11) {
-                v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-            } else {
-                v = v.replace(/^(\d{2})(\d)/, "$1.$2");
-                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-                v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-                v = v.replace(/(\d{4})(\d)/, "$1-$2");
-            }
-            i.value = v;
-        }
-        function mascaraTel(i) {
-            let v = i.value.replace(/\D/g, ''); 
-            v = v.replace(/^(\d{2})(\d)/g, '($1) $2'); 
-            v = v.replace(/(\d)(\d{4})$/, '$1-$2'); 
-            i.value = v;
-        }
-    </script>
+    <div id="modalPDF"><iframe id="pdfViewer"></iframe><button class="btn btn-red" onclick="document.getElementById('modalPDF').style.display='none'">FECHAR</button></div>
+    <div id="modalBuscaEstoque"><div class="busca-container"><input type="text" id="filtroEstoque" oninput="filtrarModalEstoque()"><div id="corpoBuscaEstoque"></div><button class="btn btn-red" onclick="document.getElementById('modalBuscaEstoque').style.display='none'">CANCELAR</button></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+        
         const firebaseConfig = { apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg", authDomain: "mecanica-linha-pesada.firebaseapp.com", projectId: "mecanica-linha-pesada", storageBucket: "mecanica-linha-pesada.firebasestorage.app", messagingSenderId: "1067537543837", appId: "1:1067537543837:web:b3247ef2b1907f395f1a74" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
@@ -270,212 +194,138 @@
         let pecasEstoqueCache = [];
         let linhaSendoEditada = null;
 
-        window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha incorreta!"); };
+        window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
         window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); if(e) e.currentTarget.classList.add('active'); };
 
-        window.setarDatasIniciais = () => {
-            document.getElementById('os_data').value = new Date().toISOString().split('T')[0];
-            calcVencimento();
-            if(document.getElementById('corpo-itens').children.length === 0) adicionarLinha();
+        window.salvarCliente = async () => {
+            const nome = document.getElementById('cl_nome').value; if(!nome) return alert("Nome!");
+            await addDoc(collection(db, "clientes"), { 
+                nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, 
+                email: document.getElementById('cl_email').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value 
+            });
+            alert("Salvo!"); location.reload();
         };
 
-        window.calcVencimento = () => {
-            let d = new Date(document.getElementById('os_data').value);
-            d.setDate(d.getDate() + 15);
-            document.getElementById('os_vencimento').value = d.toISOString().split('T')[0];
-        };
-
-        const gerarCodigoPeca = () => "LP-" + Math.floor(1000 + Math.random() * 9000);
-
-        window.salvarEstoque = async () => {
-            const desc = document.getElementById('est_desc').value;
-            const unid = document.getElementById('est_unid').value;
-            const preco = parseFloat(document.getElementById('est_preco').value) || 0;
-            const qtd = parseInt(document.getElementById('est_qtd').value) || 0;
-            if(!desc) return alert("Digite o nome da peça");
-            await addDoc(collection(db, "estoque"), { codigo: gerarCodigoPeca(), descricao: desc.toUpperCase(), unidade: unid.toUpperCase(), preco: preco, quantidade: qtd });
-            alert("Peça Cadastrada!");
-            document.getElementById('est_desc').value = ""; document.getElementById('est_unid').value = ""; document.getElementById('est_preco').value = ""; document.getElementById('est_qtd').value = "0";
-        };
-
-        onSnapshot(query(collection(db, "estoque"), orderBy("descricao")), (snap) => {
-            const list = document.getElementById('listaEstoque');
-            list.innerHTML = ""; pecasEstoqueCache = [];
+        onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
+            const list = document.getElementById('listaClientes'); const sel = document.getElementById('os_cliente');
+            list.innerHTML = ""; sel.innerHTML = "";
             snap.docs.forEach(d => {
-                const p = d.data(); const id = d.id;
-                pecasEstoqueCache.push(p);
-                list.innerHTML += `<div class="card card-estoque">
-                    <div style="display:flex; justify-content:space-between"><span class="info-label">CÓDIGO: ${p.codigo}</span><span class="info-label" style="color:#10b981">SALDO: ${p.quantidade} ${p.unidade}</span></div>
-                    <div class="info-linha"><span class="info-label">DESCRIÇÃO</span><span class="info-valor"><b>${p.descricao}</b></span></div>
-                    <div class="info-linha"><span class="info-label">PREÇO UNITÁRIO</span><span class="info-valor">R$ ${p.preco.toFixed(2)}</span></div>
-                    <div class="acoes-hist">
-                        <button class="btn btn-mini btn-blue" onclick="imprimirCodigo('${p.codigo}', '${p.descricao}', '${p.preco.toFixed(2)}')">🖨️ IMPRIMIR</button>
-                        <button class="btn btn-mini btn-red" onclick="excluirPeca('${id}')">EXCLUIR</button>
-                    </div></div>`;
+                const c = d.data();
+                list.innerHTML += `<div class="card card-cliente">
+                    <div class="info-linha"><span class="info-label">NOME</span><span class="info-valor"><b>${c.nome}</b></span></div>
+                    <div class="info-linha"><span class="info-label">WHATSAPP</span><span class="info-valor">${c.tel || '---'}</span></div>
+                    <div class="info-linha"><span class="info-label">ENDEREÇO</span><span class="info-valor">${c.end || ''} - ${c.cidade || ''}</span></div>
+                    <button class="btn btn-mini btn-red" onclick="window.excluirCliente('${d.id}')">EXCLUIR</button>
+                </div>`;
+                sel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
 
-        window.excluirPeca = async (id) => { if(confirm("Excluir item do estoque?")) await deleteDoc(doc(db, "estoque", id)); };
-
         window.abrirBuscaEstoque = (botao) => {
-            linhaSendoEditada = botao.closest('.linha-item');
+            linhaSendoEditada = botao.closest('tr');
             document.getElementById('modalBuscaEstoque').style.display = 'flex';
-            document.getElementById('filtroEstoque').value = "";
-            renderizarListaBusca(pecasEstoqueCache);
+            renderizarBusca(pecasEstoqueCache);
         };
 
         window.filtrarModalEstoque = () => {
-            const texto = document.getElementById('filtroEstoque').value.toUpperCase();
-            const filtrados = pecasEstoqueCache.filter(p => p.descricao.includes(texto) || p.codigo.includes(texto));
-            renderizarListaBusca(filtrados);
+            const txt = document.getElementById('filtroEstoque').value.toUpperCase();
+            renderizarBusca(pecasEstoqueCache.filter(p => p.descricao.includes(txt)));
         };
 
-        function renderizarListaBusca(lista) {
+        function renderizarBusca(lista) {
             const corpo = document.getElementById('corpoBuscaEstoque'); corpo.innerHTML = "";
             lista.forEach(p => {
                 const div = document.createElement('div'); div.className = 'item-busca';
-                div.innerHTML = `<strong>${p.codigo}</strong> - ${p.descricao} <br> <span style="color:#10b981">R$ ${p.preco.toFixed(2)}</span> | Saldo: ${p.quantidade}`;
+                div.innerHTML = `<b>${p.descricao}</b> - R$ ${p.preco.toFixed(2)}`;
                 div.onclick = () => {
-                    if(linhaSendoEditada) {
-                        linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica";
-                        linhaSendoEditada.querySelector('.os-desc').value = p.descricao;
-                        linhaSendoEditada.querySelector('.os-unit').value = p.preco;
-                        calcTotal();
-                    }
+                    linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica";
+                    linhaSendoEditada.querySelector('.os-desc').value = p.descricao;
+                    linhaSendoEditada.querySelector('.os-unit').value = p.preco;
+                    window.calcTotal();
                     document.getElementById('modalBuscaEstoque').style.display = 'none';
                 };
                 corpo.appendChild(div);
             });
         }
 
-        window.imprimirCodigo = (codigo, desc, valor) => {
-            const win = window.open('', '_blank', 'width=250,height=250');
-            win.document.write(`<html><body style="margin:0; padding:10px; font-family: 'Segoe UI', Arial, sans-serif; text-align:center; border:1px dashed #000; width: 180px;">
-                <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #333;">MECÂNICA LINHA PESADA</div>
-                <div style="font-size: 22px; font-weight: 800; border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 2px;">${codigo}</div>
-                <div style="font-size: 10px; line-height: 1; margin-bottom: 8px; font-weight: 600;">${desc}</div>
-                <div style="font-size: 16px; font-weight: bold; background: #000; color: #fff; padding: 3px;">R$ ${valor}</div>
-                <div style="font-size: 7px; margin-top: 5px; color: #666;">Impresso em: ${new Date().toLocaleDateString()}</div>
-                <script>window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }<\/script>
-            </body></html>`);
-            win.document.close();
-        };
-
+        window.setarDatasIniciais = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; window.calcVencimento(); window.adicionarLinha(); };
+        window.calcVencimento = () => { let d = new Date(document.getElementById('os_data').value); d.setDate(d.getDate() + 15); document.getElementById('os_vencimento').value = d.toISOString().split('T')[0]; };
         window.adicionarLinha = (tipo="Mão de Obra", desc="", qtd=1, unit=0) => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
-            tr.innerHTML = `
-                <td style="text-align:center"><button onclick="abrirBuscaEstoque(this)" style="background:none; border:none; font-size:1.1rem; cursor:pointer">📦</button></td>
-                <td><select class="os-tipo"><option ${tipo==='Mão de Obra'?'selected':''}>Mão de Obra</option><option ${tipo==='Peça Abel'?'selected':''}>Peça Abel</option><option ${tipo==='Peça Mecânica'?'selected':''}>Peça Mecânica</option></select></td>
-                <td><input type="text" class="os-desc" value="${desc}"></td>
-                <td><input type="number" class="os-qtd" value="${qtd}" oninput="calcTotal()" style="width:45px"></td>
-                <td><input type="number" class="os-unit" value="${unit}" oninput="calcTotal()" style="width:65px"></td>
-                <td class="os-subtotal" style="color:#10b981; font-weight:bold">0.00</td>
-                <td style="text-align:center"><button class="btn-remover-linha" onclick="removerLinha(this)">X</button></td>`;
-            document.getElementById('corpo-itens').appendChild(tr);
-            calcTotal();
+            tr.innerHTML = `<td style="text-align:center"><button onclick="window.abrirBuscaEstoque(this)" style="background:none; border:none; cursor:pointer">📦</button></td><td><select class="os-tipo"><option>Mão de Obra</option><option>Peça Abel</option><option>Peça Mecânica</option></select></td><td><input type="text" class="os-desc" value="${desc}"></td><td><input type="number" class="os-qtd" value="${qtd}" oninput="window.calcTotal()" style="width:45px"></td><td><input type="number" class="os-unit" value="${unit}" oninput="window.calcTotal()" style="width:65px"></td><td class="os-subtotal">0.00</td><td><button onclick="this.closest('tr').remove(); window.calcTotal();">X</button></td>`;
+            document.getElementById('corpo-itens').appendChild(tr); window.calcTotal();
         };
 
-        window.removerLinha = (botao) => { if(confirm("Remover este item?")) { botao.closest('tr').remove(); calcTotal(); } };
-
         window.calcTotal = () => {
-            let t = 0; 
-            document.querySelectorAll('.linha-item').forEach(l => {
+            let t = 0; document.querySelectorAll('.linha-item').forEach(l => {
                 const sub = (parseFloat(l.querySelector('.os-qtd').value) || 0) * (parseFloat(l.querySelector('.os-unit').value) || 0);
-                l.querySelector('.os-subtotal').innerText = sub.toFixed(2);
-                t += sub; 
+                l.querySelector('.os-subtotal').innerText = sub.toFixed(2); t += sub;
             });
-            const ent = parseFloat(document.getElementById('os_entrada').value || 0);
-            const desc = parseFloat(document.getElementById('os_desconto').value || 0);
+            const ent = parseFloat(document.getElementById('os_entrada').value) || 0;
+            const desc = parseFloat(document.getElementById('os_desconto').value) || 0;
             document.getElementById('os_total').value = (t - ent - desc).toFixed(2);
         };
 
-        window.visualizarPDF = () => {
-            const { jsPDF } = window.jspdf; const d = new jsPDF();
-            d.setFontSize(16); d.text("MECÂNICA LINHA PESADA", 10, 15);
-            d.setFontSize(10); d.text(`Cliente: ${document.getElementById('os_cliente').value}`, 10, 25);
-            d.text(`Placa: ${document.getElementById('os_placa').value} | KM: ${document.getElementById('os_km').value}`, 10, 31);
-            d.text(`Emissão: ${document.getElementById('os_data').value.split('-').reverse().join('/')}`, 10, 43);
-            const itens = [];
-            document.querySelectorAll('.linha-item').forEach(l => {
-                itens.push([l.querySelector('.os-tipo').value, l.querySelector('.os-desc').value, l.querySelector('.os-qtd').value, "R$ "+l.querySelector('.os-unit').value, "R$ "+l.querySelector('.os-subtotal').innerText]);
-            });
-            d.autoTable({ head: [['Tipo', 'Desc', 'Qtd', 'Unit', 'Total']], body: itens, startY: 55 });
-            let fY = d.lastAutoTable.finalY + 10;
-            d.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 140, fY);
-            document.getElementById('pdfViewer').src = d.output('bloburl');
-            document.getElementById('modalPDF').style.display = 'flex';
-        };
-
         window.salvarOS = async () => {
-            const itens = [];
-            document.querySelectorAll('.linha-item').forEach(l => {
+            const itens = []; document.querySelectorAll('.linha-item').forEach(l => {
                 itens.push({ tipo: l.querySelector('.os-tipo').value, desc: l.querySelector('.os-desc').value, qtd: l.querySelector('.os-qtd').value, unit: l.querySelector('.os-unit').value });
             });
-            const dados = { cliente: document.getElementById('os_cliente').value, placa: document.getElementById('os_placa').value, km: document.getElementById('os_km').value, mecanico: document.getElementById('os_mecanico').value, data: document.getElementById('os_data').value, vencimento: document.getElementById('os_vencimento').value, entrada: parseFloat(document.getElementById('os_entrada').value), desconto: parseFloat(document.getElementById('os_desconto').value), itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente' };
+            const dados = {
+                cliente: document.getElementById('os_cliente').value, placa: document.getElementById('os_placa').value, km: document.getElementById('os_km').value,
+                mecanico: document.getElementById('os_mecanico').value, data: document.getElementById('os_data').value, vencimento: document.getElementById('os_vencimento').value,
+                entrada: parseFloat(document.getElementById('os_entrada').value), desconto: parseFloat(document.getElementById('os_desconto').value), itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente'
+            };
             const idEdit = document.getElementById('edit_os_id').value;
-            if(idEdit) await updateDoc(doc(db, "ordens", idEdit), dados);
-            else await addDoc(collection(db, "ordens"), dados);
-            alert("Salvo!"); location.reload();
+            if(idEdit) await updateDoc(doc(db, "ordens", idEdit), dados); else await addDoc(collection(db, "ordens"), dados);
+            location.reload();
         };
 
         onSnapshot(query(collection(db, "ordens"), orderBy("data", "desc")), (snap) => {
-            const hist = document.getElementById('historicoOS'); const dev = document.getElementById('listaDevedores');
-            const finCorpo = document.getElementById('corpo-financeiro'); const abaMec = document.getElementById('lista-cards-mecanicos');
-            const hoje = new Date().toISOString().split('T')[0];
-            hist.innerHTML = ""; dev.innerHTML = ""; finCorpo.innerHTML = ""; abaMec.innerHTML = "";
-            let totalDev = 0; let resMec = { "Abel Moreira": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 }, "Igor": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 } };
-
+            const hist = document.getElementById('historicoOS'); const fin = document.getElementById('corpo-financeiro');
+            const dev = document.getElementById('listaDevedores'); const abaMec = document.getElementById('lista-cards-mecanicos');
+            hist.innerHTML = ""; fin.innerHTML = ""; dev.innerHTML = ""; abaMec.innerHTML = "";
+            let tDev = 0; let resMec = {"Abel Moreira": 0, "Igor": 0};
             snap.docs.forEach(d => {
-                const o = d.data(); const id = d.id; const idC = id.substring(0,5).toUpperCase();
-                const vBr = o.vencimento ? o.vencimento.split('-').reverse().join('/') : '--/--';
-                if(resMec[o.mecanico]) {
-                    o.itens.forEach(i => {
-                        let v = (parseFloat(i.qtd) || 0) * (parseFloat(i.unit) || 0);
-                        if(i.tipo === "Mão de Obra") resMec[o.mecanico].mo += v;
-                        else if(i.tipo === "Peça Abel") resMec[o.mecanico].pAbel += v;
-                        else if(i.tipo === "Peça Mecânica") resMec[o.mecanico].pMec += v;
-                    });
-                    resMec[o.mecanico].bruto += o.total;
-                }
-                let corS = o.status === 'pago' ? '#10b981' : (o.vencimento < hoje ? '#ef4444' : '#f59e0b');
-                hist.innerHTML += `<div class="card" style="border-left: 4px solid ${corS}"><div class="info-linha"><span class="info-label">CLIENTE</span><span class="info-valor">${o.cliente}</span></div><div class="info-linha"><span class="info-label">VALOR</span><span class="info-valor">R$ ${o.total.toFixed(2)}</span></div><div class="acoes-hist"><button class="btn btn-mini btn-blue" onclick="editarOS('${id}')">EDITAR</button></div></div>`;
-                if(o.status === 'pendente') { totalDev += o.total; dev.innerHTML += `<div class="card"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}</div>`; }
-                finCorpo.innerHTML += `<tr><td>${idC}</td><td>${o.cliente}</td><td>${vBr}</td><td>R$ ${o.total.toFixed(2)}</td><td><select class="sel-status" onchange="baixar('${id}', this.value)"><option value="pendente" ${o.status==='pendente'?'selected':''}>PENDENTE</option><option value="pago" ${o.status==='pago'?'selected':''}>PAGO</option></select></td></tr>`;
+                const o = d.data(); const id = d.id;
+                hist.innerHTML += `<div class="card"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)} <button onclick="window.editarOS('${id}')">EDIT</button></div>`;
+                if(o.status==='pendente') { tDev += o.total; dev.innerHTML += `<div class="card">${o.cliente} - R$ ${o.total.toFixed(2)}</div>`; }
+                fin.innerHTML += `<tr><td>${id.slice(-5)}</td><td>${o.cliente}</td><td>${o.total}</td><td><select onchange="window.baixar('${id}', this.value)"><option value="pendente" ${o.status==='pendente'?'selected':''}>PENDENTE</option><option value="pago" ${o.status==='pago'?'selected':''}>PAGO</option></select></td></tr>`;
+                if(resMec[o.mecanico] !== undefined) resMec[o.mecanico] += o.total;
             });
-            for(let m in resMec) { abaMec.innerHTML += `<div class="card card-mecanico"><h3>${m}</h3><div class="item-mecanico"><span>Total Bruto:</span><span class="valor-mecanico">R$ ${resMec[m].bruto.toFixed(2)}</span></div></div>`; }
-            document.getElementById('totalBrutoDevedores').innerText = `R$ ${totalDev.toFixed(2)}`;
+            for(let m in resMec) abaMec.innerHTML += `<div class="card"><h3>${m}</h3>R$ ${resMec[m].toFixed(2)}</div>`;
+            document.getElementById('totalBrutoDevedores').innerText = `R$ ${tDev.toFixed(2)}`;
         });
 
-        onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
-            const list = document.getElementById('listaClientes'); const sel = document.getElementById('os_cliente');
-            list.innerHTML = ""; sel.innerHTML = "";
-            snap.docs.forEach(d => {
-                const c = d.data(); const id = d.id;
-                list.innerHTML += `<div class="card card-cliente"><b>${c.nome}</b><br>${c.tel || ''}</div>`;
-                sel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
-            });
-        });
-
-        window.salvarCliente = async () => {
-            const nome = document.getElementById('cl_nome').value; if(!nome) return alert("Nome obrigatório");
-            await addDoc(collection(db, "clientes"), { nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value });
-            alert("Cliente salvo!");
-            document.getElementById('cl_nome').value=""; document.getElementById('cl_doc').value=""; document.getElementById('cl_tel').value=""; document.getElementById('cl_end').value=""; document.getElementById('cl_cidade').value="";
+        window.salvarEstoque = async () => {
+            await addDoc(collection(db, "estoque"), { descricao: document.getElementById('est_desc').value.toUpperCase(), preco: parseFloat(document.getElementById('est_preco').value), quantidade: parseInt(document.getElementById('est_qtd').value) });
+            alert("Salvo!");
         };
+
+        onSnapshot(query(collection(db, "estoque"), orderBy("descricao")), (snap) => {
+            const list = document.getElementById('listaEstoque'); list.innerHTML = ""; pecasEstoqueCache = [];
+            snap.docs.forEach(d => {
+                const p = d.data(); pecasEstoqueCache.push(p);
+                list.innerHTML += `<div class="card card-estoque"><b>${p.descricao}</b><br>R$ ${p.preco.toFixed(2)} | Qtd: ${p.quantidade}</div>`;
+            });
+        });
 
         window.editarOS = async (id) => {
-            const snap = await getDoc(doc(db, "ordens", id)); const o = snap.data();
-            abrirAba(null, 'aba_nova_os'); document.getElementById('edit_os_id').value = id;
-            document.getElementById('os_cliente').value = o.cliente; document.getElementById('os_placa').value = o.placa;
-            document.getElementById('os_km').value = o.km; document.getElementById('os_mecanico').value = o.mecanico;
-            document.getElementById('os_data').value = o.data; document.getElementById('os_entrada').value = o.entrada;
-            document.getElementById('os_desconto').value = o.desconto; document.getElementById('corpo-itens').innerHTML = "";
-            o.itens.forEach(i => adicionarLinha(i.tipo, i.desc, i.qtd, i.unit)); calcTotal();
+            const s = await getDoc(doc(db, "ordens", id)); const o = s.data();
+            document.getElementById('edit_os_id').value = id; document.getElementById('os_cliente').value = o.cliente;
+            document.getElementById('os_placa').value = o.placa; document.getElementById('os_km').value = o.km;
+            document.getElementById('os_mecanico').value = o.mecanico; document.getElementById('os_data').value = o.data;
+            document.getElementById('os_entrada').value = o.entrada; document.getElementById('os_desconto').value = o.desconto;
+            document.getElementById('corpo-itens').innerHTML = ""; o.itens.forEach(i => window.adicionarLinha(i.tipo, i.desc, i.qtd, i.unit));
+            window.abrirAba(null, 'aba_nova_os');
         };
-
         window.baixar = async (id, s) => { await updateDoc(doc(db, "ordens", id), { status: s }); };
+    </script>
+
+    <script>
+        function mascaraDoc(i) { let v = i.value.replace(/\D/g, ''); if (v.length <= 11) { v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); } else { v = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5"); } i.value = v; }
+        function mascaraTel(i) { let v = i.value.replace(/\D/g, ''); v = v.replace(/^(\d{2})(\d)/g, '($1) $2').replace(/(\d)(\d{4})$/, '$1-$2'); i.value = v; }
     </script>
 </body>
 </html>
