@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -123,8 +123,8 @@
                     <input type="hidden" id="edit_cliente_id">
                     <div class="grid-form">
                         <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" oninput="mascaraDoc(this)"></div>
-                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel" oninput="mascaraTel(this)"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" placeholder="000.000.000-00" oninput="mascaraDoc(this)" maxlength="18"></div>
+                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel" placeholder="(00) 00000-0000" oninput="mascaraTel(this)" maxlength="15"></div>
                         <div class="campo"><label>E-mail</label><input type="email" id="cl_email"></div>
                     </div>
                     <div class="campo" style="margin-top:8px"><label>Endereço Completo</label><input type="text" id="cl_end"></div>
@@ -237,8 +237,26 @@
     </div>
 
     <script>
-        function mascaraDoc(i) { let v = i.value.replace(/\D/g, ''); if (v.length <= 11) { v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4"); } else { v = v.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5"); } i.value = v; }
-        function mascaraTel(i) { let v = i.value.replace(/\D/g, ''); v = v.replace(/^(\d{2})(\d)/g, '($1) $2'); v = v.replace(/(\d)(\d{4})$/, '$1-$2'); i.value = v; }
+        function mascaraDoc(i) {
+            let v = i.value.replace(/\D/g, ''); 
+            if (v.length <= 11) {
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d)/, "$1.$2");
+                v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+            } else {
+                v = v.replace(/^(\d{2})(\d)/, "$1.$2");
+                v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+                v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
+                v = v.replace(/(\d{4})(\d)/, "$1-$2");
+            }
+            i.value = v;
+        }
+        function mascaraTel(i) {
+            let v = i.value.replace(/\D/g, ''); 
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2'); 
+            v = v.replace(/(\d)(\d{4})$/, '$1-$2'); 
+            i.value = v;
+        }
     </script>
 
     <script type="module">
@@ -252,7 +270,6 @@
         let pecasEstoqueCache = [];
         let linhaSendoEditada = null;
 
-        // LOGIN E NAVEGAÇÃO
         window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha incorreta!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
@@ -270,7 +287,6 @@
             document.getElementById('os_vencimento').value = d.toISOString().split('T')[0];
         };
 
-        // ESTOQUE E BUSCA
         const gerarCodigoPeca = () => "LP-" + Math.floor(1000 + Math.random() * 9000);
 
         window.salvarEstoque = async () => {
@@ -300,6 +316,8 @@
                     </div></div>`;
             });
         });
+
+        window.excluirPeca = async (id) => { if(confirm("Excluir item do estoque?")) await deleteDoc(doc(db, "estoque", id)); };
 
         window.abrirBuscaEstoque = (botao) => {
             linhaSendoEditada = botao.closest('.linha-item');
@@ -345,7 +363,6 @@
             win.document.close();
         };
 
-        // GESTÃO DE ITENS NA OC
         window.adicionarLinha = (tipo="Mão de Obra", desc="", qtd=1, unit=0) => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
             tr.innerHTML = `
@@ -403,7 +420,6 @@
             alert("Salvo!"); location.reload();
         };
 
-        // SNAPSHOTS (HISTÓRICO, FINANCEIRO, MECÂNICOS, CLIENTES)
         onSnapshot(query(collection(db, "ordens"), orderBy("data", "desc")), (snap) => {
             const hist = document.getElementById('historicoOS'); const dev = document.getElementById('listaDevedores');
             const finCorpo = document.getElementById('corpo-financeiro'); const abaMec = document.getElementById('lista-cards-mecanicos');
@@ -445,7 +461,8 @@
         window.salvarCliente = async () => {
             const nome = document.getElementById('cl_nome').value; if(!nome) return alert("Nome obrigatório");
             await addDoc(collection(db, "clientes"), { nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value });
-            alert("Cliente salvo!"); location.reload();
+            alert("Cliente salvo!");
+            document.getElementById('cl_nome').value=""; document.getElementById('cl_doc').value=""; document.getElementById('cl_tel').value=""; document.getElementById('cl_end').value=""; document.getElementById('cl_cidade').value="";
         };
 
         window.editarOS = async (id) => {
@@ -459,7 +476,6 @@
         };
 
         window.baixar = async (id, s) => { await updateDoc(doc(db, "ordens", id), { status: s }); };
-        window.excluirPeca = async (id) => { if(confirm("Remover do estoque?")) await deleteDoc(doc(db, "estoque", id)); };
     </script>
 </body>
 </html>
