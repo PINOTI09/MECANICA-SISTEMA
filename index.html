@@ -156,14 +156,17 @@
 
             <section id="aba_estoque" class="tab-content">
                 <div class="card">
-                    <h2>Estoque</h2>
+                    <h2 id="tituloEstoque">Novo Item no Estoque</h2>
+                    <input type="hidden" id="edit_est_id">
                     <div class="grid-form">
                         <div class="campo"><label>Descrição</label><input type="text" id="est_desc"></div>
                         <div class="campo"><label>Preço</label><input type="number" id="est_preco"></div>
                         <div class="campo"><label>Qtd</label><input type="number" id="est_qtd"></div>
                     </div>
-                    <button class="btn btn-green" onclick="salvarEstoque()">SALVAR NO ESTOQUE</button>
+                    <button class="btn btn-green" id="btnSalvarEstoque" onclick="salvarEstoque()">SALVAR NO ESTOQUE</button>
+                    <button class="btn btn-red" id="btnCancelarEstoque" style="display:none; margin-top:5px" onclick="limparFormEstoque()">CANCELAR EDIÇÃO</button>
                 </div>
+                <h2>Itens em Estoque</h2>
                 <div id="listaEstoque"></div>
             </section>
         </main>
@@ -201,25 +204,19 @@
             const mec = document.getElementById('lista-cards-mecanicos');
             const txtBruto = document.getElementById('totalBrutoDevedores');
             
-            // Array para organizar os dados
             let todasOrdens = snap.docs.map(d => ({ ...d.data(), id: d.id }));
-
-            // Ordem para Histórico (Data mais recente primeiro)
             let ordensPorData = [...todasOrdens].sort((a,b) => b.data.localeCompare(a.data));
-            
-            // Ordem para Financeiro (Alfabetica por Cliente)
             let ordensPorCliente = [...todasOrdens].sort((a,b) => a.cliente.localeCompare(b.cliente));
 
             hist.innerHTML = ""; fin.innerHTML = ""; dev.innerHTML = ""; mec.innerHTML = "";
             let somaBruto = 0;
             let resMec = { "Abel Moreira": { mo: 0, abel: 0, mec: 0, total: 0 }, "Igor": { mo: 0, abel: 0, mec: 0, total: 0 } };
 
-            // Renderiza Histórico (Por Data)
             ordensPorData.forEach(o => {
                 const id = o.id;
                 const dataEmiBr = o.data.split('-').reverse().join('/');
                 hist.innerHTML += `<div class="card" style="border-left: 5px solid ${o.status === 'pago' ? '#10b981' : (o.status === 'atrasado' ? '#ef4444' : '#f59e0b')}">
-                    <div class="info-linha"><span class="info-label">DATA BRASILEIRA</span><span class="info-valor">${dataEmiBr}</span></div>
+                    <div class="info-linha"><span class="info-label">DATA</span><span class="info-valor">${dataEmiBr}</span></div>
                     <div class="info-linha"><span class="info-label">NUMERO DA OC</span><span class="info-valor">#${id.substring(0,5).toUpperCase()}</span></div>
                     <div class="info-linha"><span class="info-label">CLIENTE</span><span class="info-valor"><b>${o.cliente}</b></span></div>
                     <div class="info-linha"><span class="info-label">VALOR</span><span class="info-valor">R$ ${o.total.toFixed(2)}</span></div>
@@ -230,14 +227,13 @@
                             <option value="Pago" ${o.semana === 'Pago' ? 'selected' : ''}>PAGO</option>
                         </select>
                     </div>
-                    <div class="acoes-hist">
+                    <div class="acoes-hist" style="display:flex; gap:5px">
                         <button class="btn btn-mini btn-blue" onclick="window.editarOS('${id}')">EDITAR</button>
                         <button class="btn btn-mini btn-red" onclick="window.apagarOS('${id}')">APAGAR</button>
                     </div>
                 </div>`;
             });
 
-            // Renderiza Financeiro (Ordem Alfabética)
             ordensPorCliente.forEach(o => {
                 const id = o.id;
                 const dataEmiBr = o.data.split('-').reverse().join('/');
@@ -246,7 +242,7 @@
                 
                 fin.innerHTML += `<div class="card">
                     <div class="info-linha"><span class="info-label">CLIENTE</span><span class="info-valor"><b>${o.cliente}</b></span></div>
-                    <div class="info-linha"><span class="info-label">DATA BRASILEIRA (EMISSÃO)</span><span class="info-valor">${dataEmiBr}</span></div>
+                    <div class="info-linha"><span class="info-label">DATA EMISSÃO</span><span class="info-valor">${dataEmiBr}</span></div>
                     <div class="info-linha"><span class="info-label">NUMERO DA OC</span><span class="info-valor">#${id.substring(0,5).toUpperCase()}</span></div>
                     <div class="info-linha"><span class="info-label">DATA DE VENCIMENTO</span><span class="info-valor">${dataVencBr}</span></div>
                     <div class="info-linha"><span class="info-label">VALOR TOTAL</span><span class="info-valor" style="color:#10b981; font-weight:bold">R$ ${o.total.toFixed(2)}</span></div>
@@ -260,18 +256,21 @@
                     </div>
                 </div>`;
 
-                // Devedores e Mecânicos (Lógica interna)
                 if(o.status !== 'pago') {
                     dev.innerHTML += `<div class="card" style="border-left:4px solid ${o.status==='atrasado'?'#ef4444':'#f59e0b'}"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}</div>`;
                     somaBruto += o.total;
                 }
+
+                // CÁLCULO POR MECÂNICO - CORRIGIDO PARA 'itens'
                 if(resMec[o.mecanico]) {
-                    o.itens.forEach(i => {
-                        const vItem = (parseFloat(i.qtd)||0) * (parseFloat(i.unit)||0);
-                        if(i.tipo === "Mão de Obra") resMec[o.mecanico].mo += vItem;
-                        else if(i.tipo === "Peça Abel") resMec[o.mecanico].abel += vItem;
-                        else if(i.tipo === "Peça Mecânica") resMec[o.mecanico].mec += vItem;
-                    });
+                    if (o.itens && Array.isArray(o.itens)) {
+                        o.itens.forEach(i => {
+                            const vItem = (parseFloat(i.qtd)||0) * (parseFloat(i.unit)||0);
+                            if(i.tipo === "Mão de Obra") resMec[o.mecanico].mo += vItem;
+                            else if(i.tipo === "Peça Abel") resMec[o.mecanico].abel += vItem;
+                            else if(i.tipo === "Peça Mecânica") resMec[o.mecanico].mec += vItem;
+                        });
+                    }
                     resMec[o.mecanico].total += o.total;
                 }
             });
@@ -297,45 +296,88 @@
             list.innerHTML = ""; sel.innerHTML = "";
             snap.docs.forEach(d => {
                 const c = d.data();
-                list.innerHTML += `<div class="card card-cliente">
+                list.innerHTML += `<div class="card">
                     <div class="info-linha"><span class="info-label">NOME</span><span class="info-valor"><b>${c.nome}</b></span></div>
                     <div class="info-linha"><span class="info-label">CPF/CNPJ</span><span class="info-valor">${c.doc || '---'}</span></div>
                     <div class="info-linha"><span class="info-label">WHATSAPP</span><span class="info-valor">${c.tel || '---'}</span></div>
-                    <div class="info-linha"><span class="info-label">E-MAIL</span><span class="info-valor">${c.email || '---'}</span></div>
-                    <div class="info-linha"><span class="info-label">ENDEREÇO</span><span class="info-valor">${c.end || ''} - ${c.cidade || ''}</span></div>
                     <button class="btn btn-mini btn-red" onclick="window.apagarCliente('${d.id}')">APAGAR CLIENTE</button>
                 </div>`;
                 sel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
+
         window.salvarCliente = async () => {
             const nome = document.getElementById('cl_nome').value; if(!nome) return alert("Nome!");
             await addDoc(collection(db, "clientes"), { nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, email: document.getElementById('cl_email').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value });
             alert("Salvo!"); document.querySelectorAll('#aba_cad_cliente input').forEach(i => i.value = "");
         };
+
         window.apagarCliente = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "clientes", id)); };
 
-        // ESTOQUE
+        // ESTOQUE - SALVAR, EDITAR E EXCLUIR
         onSnapshot(collection(db, "estoque"), (snap) => {
             const list = document.getElementById('listaEstoque'); list.innerHTML = "";
             pecasEstoqueCache = snap.docs.map(d => ({...d.data(), id: d.id}));
-            pecasEstoqueCache.forEach(p => { list.innerHTML += `<div class="card"><b>${p.descricao}</b> - R$ ${p.preco.toFixed(2)} <button class="btn btn-mini btn-red" onclick="window.apagarEstoque('${p.id}')">X</button></div>`; });
+            pecasEstoqueCache.forEach(p => { 
+                list.innerHTML += `<div class="card">
+                    <div class="info-linha">
+                        <span class="info-valor"><b>${p.descricao}</b></span>
+                        <span class="info-label">Preço: R$ ${p.preco.toFixed(2)} | Qtd: ${p.quantidade}</span>
+                    </div>
+                    <div style="display:flex; gap:5px">
+                        <button class="btn btn-mini btn-blue" onclick="window.prepararEdicaoEstoque('${p.id}')">EDITAR</button>
+                        <button class="btn btn-mini btn-red" onclick="window.apagarEstoque('${p.id}')">EXCLUIR</button>
+                    </div>
+                </div>`; 
+            });
         });
+
         window.salvarEstoque = async () => {
-            const d = document.getElementById('est_desc').value; const p = parseFloat(document.getElementById('est_preco').value); const q = parseInt(document.getElementById('est_qtd').value);
-            if(!d || isNaN(p)) return alert("Dados inválidos!");
-            await addDoc(collection(db, "estoque"), { descricao: d.toUpperCase(), preco: p, quantidade: q });
-            alert("Estoque Atualizado!");
+            const id = document.getElementById('edit_est_id').value;
+            const desc = document.getElementById('est_desc').value.toUpperCase();
+            const preco = parseFloat(document.getElementById('est_preco').value);
+            const qtd = parseInt(document.getElementById('est_qtd').value);
+            if(!desc || isNaN(preco)) return alert("Dados inválidos!");
+            const dados = { descricao: desc, preco: preco, quantidade: qtd };
+            if(id) await updateDoc(doc(db, "estoque", id), dados); else await addDoc(collection(db, "estoque"), dados);
+            alert("Estoque Atualizado!"); window.limparFormEstoque();
         };
+
+        window.prepararEdicaoEstoque = async (id) => {
+            const docRef = await getDoc(doc(db, "estoque", id));
+            const p = docRef.data();
+            document.getElementById('edit_est_id').value = id;
+            document.getElementById('est_desc').value = p.descricao;
+            document.getElementById('est_preco').value = p.preco;
+            document.getElementById('est_qtd').value = p.quantidade;
+            document.getElementById('tituloEstoque').innerText = "Editando Item";
+            document.getElementById('btnSalvarEstoque').innerText = "ATUALIZAR ITEM";
+            document.getElementById('btnCancelarEstoque').style.display = "block";
+        };
+
+        window.limparFormEstoque = () => {
+            document.getElementById('edit_est_id').value = "";
+            document.querySelectorAll('#aba_estoque input').forEach(i => i.value = "");
+            document.getElementById('tituloEstoque').innerText = "Novo Item no Estoque";
+            document.getElementById('btnSalvarEstoque').innerText = "SALVAR NO ESTOQUE";
+            document.getElementById('btnCancelarEstoque').style.display = "none";
+        };
+
         window.apagarEstoque = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "estoque", id)); };
 
-        // BUSCA ESTOQUE
+        // BUSCA ESTOQUE NA OC
         window.abrirBuscaEstoque = (btn) => { linhaSendoEditada = btn.closest('tr'); document.getElementById('modalBuscaEstoque').style.display='flex'; renderizarBusca(pecasEstoqueCache); };
         function renderizarBusca(lista) {
             const corpo = document.getElementById('corpoBuscaEstoque'); corpo.innerHTML = "";
             lista.forEach(p => {
                 const d = document.createElement('div'); d.className = 'item-busca'; d.innerHTML = `${p.descricao} - R$ ${p.preco.toFixed(2)}`;
-                d.onclick = () => { linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica"; linhaSendoEditada.querySelector('.os-desc').value = p.descricao; linhaSendoEditada.querySelector('.os-unit').value = p.preco; window.calcTotal(); document.getElementById('modalBuscaEstoque').style.display='none'; };
+                d.onclick = () => { 
+                    linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica"; 
+                    linhaSendoEditada.querySelector('.os-desc').value = p.descricao; 
+                    linhaSendoEditada.querySelector('.os-unit').value = p.preco; 
+                    window.calcTotal(); 
+                    document.getElementById('modalBuscaEstoque').style.display='none'; 
+                };
                 corpo.appendChild(d);
             });
         }
@@ -343,12 +385,27 @@
         // LÓGICA OS
         window.setarDatasIniciais = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; window.calcVencimento(); window.adicionarLinha(); };
         window.calcVencimento = () => { let d = new Date(document.getElementById('os_data').value); d.setDate(d.getDate() + 15); document.getElementById('os_vencimento').value = d.toISOString().split('T')[0]; };
+        
         window.adicionarLinha = (tipo="Mão de Obra", desc="", qtd=1, unit=0) => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
-            tr.innerHTML = `<td><button onclick="window.abrirBuscaEstoque(this)">📦</button></td><td><select class="os-tipo"><option>Mão de Obra</option><option>Peça Abel</option><option>Peça Mecânica</option></select></td><td><input type="text" class="os-desc" value="${desc}"></td><td><input type="number" class="os-qtd" value="${qtd}" oninput="window.calcTotal()" style="width:40px"></td><td><input type="number" class="os-unit" value="${unit}" oninput="window.calcTotal()" style="width:60px"></td><td class="os-subtotal">0.00</td><td><button onclick="this.closest('tr').remove(); window.calcTotal();">X</button></td>`;
+            tr.innerHTML = `<td><button onclick="window.abrirBuscaEstoque(this)">📦</button></td>
+                <td><select class="os-tipo"><option ${tipo==='Mão de Obra'?'selected':''}>Mão de Obra</option><option ${tipo==='Peça Abel'?'selected':''}>Peça Abel</option><option ${tipo==='Peça Mecânica'?'selected':''}>Peça Mecânica</option></select></td>
+                <td><input type="text" class="os-desc" value="${desc}"></td>
+                <td><input type="number" class="os-qtd" value="${qtd}" oninput="window.calcTotal()" style="width:40px"></td>
+                <td><input type="number" class="os-unit" value="${unit}" oninput="window.calcTotal()" style="width:60px"></td>
+                <td class="os-subtotal">0.00</td>
+                <td><button onclick="this.closest('tr').remove(); window.calcTotal();">X</button></td>`;
             document.getElementById('corpo-itens').appendChild(tr); window.calcTotal();
         };
-        window.calcTotal = () => { let t = 0; document.querySelectorAll('.linha-item').forEach(l => { const sub = (parseFloat(l.querySelector('.os-qtd').value)||0)*(parseFloat(l.querySelector('.os-unit').value)||0); l.querySelector('.os-subtotal').innerText = sub.toFixed(2); t += sub; }); document.getElementById('os_total').value = (t - (parseFloat(document.getElementById('os_entrada').value)||0) - (parseFloat(document.getElementById('os_desconto').value)||0)).toFixed(2); };
+
+        window.calcTotal = () => { 
+            let t = 0; 
+            document.querySelectorAll('.linha-item').forEach(l => { 
+                const sub = (parseFloat(l.querySelector('.os-qtd').value)||0)*(parseFloat(l.querySelector('.os-unit').value)||0); 
+                l.querySelector('.os-subtotal').innerText = sub.toFixed(2); t += sub; 
+            }); 
+            document.getElementById('os_total').value = (t - (parseFloat(document.getElementById('os_entrada').value)||0) - (parseFloat(document.getElementById('os_desconto').value)||0)).toFixed(2); 
+        };
 
         window.salvarOS = async () => {
             const itens = []; document.querySelectorAll('.linha-item').forEach(l => { itens.push({ tipo: l.querySelector('.os-tipo').value, desc: l.querySelector('.os-desc').value, qtd: l.querySelector('.os-qtd').value, unit: l.querySelector('.os-unit').value }); });
