@@ -59,7 +59,6 @@
         .btn-blue { background: #3b82f6; }
         .btn-green { background: #10b981; }
         .btn-red { background: #ef4444; }
-        .btn-orange { background: #f59e0b; }
 
         .tabela-financeira { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; }
         .tabela-financeira th { text-align: left; color: #3b82f6; padding: 10px; border-bottom: 1px solid #333; }
@@ -69,6 +68,9 @@
 
         .tabela-itens { width: 100%; border-collapse: collapse; margin-bottom: 8px; margin-top: 10px; }
         .tabela-itens th { font-size: 0.55rem; color: #3b82f6; text-align: left; padding: 4px; text-transform: uppercase; }
+
+        .btn-remover-linha { background: #ef4444; color: white; border: none; border-radius: 4px; width: 25px; height: 25px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        .btn-remover-linha:hover { background: #b91c1c; }
 
         #modalPDF, #modalBuscaEstoque { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 5000; padding: 20px; flex-direction: column; align-items: center; }
         #pdfViewer { width: 100%; max-width: 800px; height: 85%; background: white; border-radius: 8px; border: none; }
@@ -151,7 +153,7 @@
                         <div class="campo"><label>Vencimento (15d)</label><input type="date" id="os_vencimento" readonly></div>
                     </div>
                     <table class="tabela-itens">
-                        <thead><tr><th>ESTOQUE</th><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th><th>TOTAL</th></tr></thead>
+                        <thead><tr><th>ESTOQUE</th><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th><th>TOTAL</th><th></th></tr></thead>
                         <tbody id="corpo-itens"></tbody>
                     </table>
                     <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none" onclick="adicionarLinha()">+ NOVO ITEM</button>
@@ -164,7 +166,7 @@
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
                         <button class="btn btn-blue" onclick="salvarOS()">SALVAR OC</button>
-                        <button class="btn btn-blue" onclick="visualizarPDF()" style="background:#2563eb">VIZUALIZAR PDF</button>
+                        <button class="btn btn-blue" onclick="visualizarPDF()" style="background:#2563eb">VISUALIZAR PDF</button>
                     </div>
                 </div>
             </section>
@@ -180,11 +182,7 @@
                     <div style="overflow-x: auto;">
                         <table class="tabela-financeira">
                             <thead>
-                                <tr>
-                                    <th>Nº OC</th>
-                                    <th>CLIENTE</th>
-                                    <th>VENCIMENTO</th>
-                                    <th>VALOR</th> <th>STATUS</th> </tr>
+                                <tr><th>Nº OC</th><th>CLIENTE</th><th>VENCIMENTO</th><th>VALOR</th><th>STATUS</th></tr>
                             </thead>
                             <tbody id="corpo-financeiro"></tbody>
                         </table>
@@ -220,7 +218,6 @@
                 <h2>Itens em Estoque</h2>
                 <div id="listaEstoque"></div>
             </section>
-
         </main>
     </div>
 
@@ -246,7 +243,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCxkOwAQGtUP7D6HdzuJiSG3I2L9o84Chg", authDomain: "mecanica-linha-pesada.firebaseapp.com", projectId: "mecanica-linha-pesada", storageBucket: "mecanica-linha-pesada.firebasestorage.app", messagingSenderId: "1067537543837", appId: "1:1067537543837:web:b3247ef2b1907f395f1a74" };
         const app = initializeApp(firebaseConfig);
@@ -273,7 +270,7 @@
             document.getElementById('os_vencimento').value = d.toISOString().split('T')[0];
         };
 
-        // GESTÃO DE ESTOQUE
+        // ESTOQUE E BUSCA
         const gerarCodigoPeca = () => "LP-" + Math.floor(1000 + Math.random() * 9000);
 
         window.salvarEstoque = async () => {
@@ -281,50 +278,29 @@
             const unid = document.getElementById('est_unid').value;
             const preco = parseFloat(document.getElementById('est_preco').value) || 0;
             const qtd = parseInt(document.getElementById('est_qtd').value) || 0;
-
             if(!desc) return alert("Digite o nome da peça");
-
-            await addDoc(collection(db, "estoque"), {
-                codigo: gerarCodigoPeca(),
-                descricao: desc.toUpperCase(),
-                unidade: unid.toUpperCase(),
-                preco: preco,
-                quantidade: qtd
-            });
-            
+            await addDoc(collection(db, "estoque"), { codigo: gerarCodigoPeca(), descricao: desc.toUpperCase(), unidade: unid.toUpperCase(), preco: preco, quantidade: qtd });
             alert("Peça Cadastrada!");
-            document.getElementById('est_desc').value = "";
-            document.getElementById('est_unid').value = "";
-            document.getElementById('est_preco').value = "";
-            document.getElementById('est_qtd').value = "0";
+            document.getElementById('est_desc').value = ""; document.getElementById('est_unid').value = ""; document.getElementById('est_preco').value = ""; document.getElementById('est_qtd').value = "0";
         };
 
         onSnapshot(query(collection(db, "estoque"), orderBy("descricao")), (snap) => {
             const list = document.getElementById('listaEstoque');
-            list.innerHTML = "";
-            pecasEstoqueCache = [];
+            list.innerHTML = ""; pecasEstoqueCache = [];
             snap.docs.forEach(d => {
                 const p = d.data(); const id = d.id;
                 pecasEstoqueCache.push(p);
-                list.innerHTML += `
-                    <div class="card card-estoque">
-                        <div style="display:flex; justify-content:space-between">
-                            <span class="info-label">CÓDIGO: ${p.codigo}</span>
-                            <span class="info-label" style="color:#10b981">SALDO: ${p.quantidade} ${p.unidade}</span>
-                        </div>
-                        <div class="info-linha"><span class="info-label">DESCRIÇÃO</span><span class="info-valor"><b>${p.descricao}</b></span></div>
-                        <div class="info-linha"><span class="info-label">PREÇO UNITÁRIO</span><span class="info-valor">R$ ${p.preco.toFixed(2)}</span></div>
-                        <div class="acoes-hist">
-                            <button class="btn btn-mini btn-blue" onclick="imprimirCodigo('${p.codigo}', '${p.descricao}', '${p.preco.toFixed(2)}')">🖨️ IMPRIMIR</button>
-                            <button class="btn btn-mini btn-red" onclick="excluirPeca('${id}')">EXCLUIR</button>
-                        </div>
-                    </div>`;
+                list.innerHTML += `<div class="card card-estoque">
+                    <div style="display:flex; justify-content:space-between"><span class="info-label">CÓDIGO: ${p.codigo}</span><span class="info-label" style="color:#10b981">SALDO: ${p.quantidade} ${p.unidade}</span></div>
+                    <div class="info-linha"><span class="info-label">DESCRIÇÃO</span><span class="info-valor"><b>${p.descricao}</b></span></div>
+                    <div class="info-linha"><span class="info-label">PREÇO UNITÁRIO</span><span class="info-valor">R$ ${p.preco.toFixed(2)}</span></div>
+                    <div class="acoes-hist">
+                        <button class="btn btn-mini btn-blue" onclick="imprimirCodigo('${p.codigo}', '${p.descricao}', '${p.preco.toFixed(2)}')">🖨️ IMPRIMIR</button>
+                        <button class="btn btn-mini btn-red" onclick="excluirPeca('${id}')">EXCLUIR</button>
+                    </div></div>`;
             });
         });
 
-        window.excluirPeca = async (id) => { if(confirm("Remover do estoque?")) await deleteDoc(doc(db, "estoque", id)); };
-
-        // MODAL DE BUSCA NO ESTOQUE (PARA A OC)
         window.abrirBuscaEstoque = (botao) => {
             linhaSendoEditada = botao.closest('.linha-item');
             document.getElementById('modalBuscaEstoque').style.display = 'flex';
@@ -339,60 +315,52 @@
         };
 
         function renderizarListaBusca(lista) {
-            const corpo = document.getElementById('corpoBuscaEstoque');
-            corpo.innerHTML = "";
+            const corpo = document.getElementById('corpoBuscaEstoque'); corpo.innerHTML = "";
             lista.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'item-busca';
+                const div = document.createElement('div'); div.className = 'item-busca';
                 div.innerHTML = `<strong>${p.codigo}</strong> - ${p.descricao} <br> <span style="color:#10b981">R$ ${p.preco.toFixed(2)}</span> | Saldo: ${p.quantidade}`;
-                div.onclick = () => selecionarPeca(p);
+                div.onclick = () => {
+                    if(linhaSendoEditada) {
+                        linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica";
+                        linhaSendoEditada.querySelector('.os-desc').value = p.descricao;
+                        linhaSendoEditada.querySelector('.os-unit').value = p.preco;
+                        calcTotal();
+                    }
+                    document.getElementById('modalBuscaEstoque').style.display = 'none';
+                };
                 corpo.appendChild(div);
             });
         }
 
-        function selecionarPeca(p) {
-            if(linhaSendoEditada) {
-                linhaSendoEditada.querySelector('.os-tipo').value = "Peça Mecânica";
-                linhaSendoEditada.querySelector('.os-desc').value = p.descricao;
-                linhaSendoEditada.querySelector('.os-unit').value = p.preco;
-                calcTotal();
-            }
-            document.getElementById('modalBuscaEstoque').style.display = 'none';
-        }
-
         window.imprimirCodigo = (codigo, desc, valor) => {
-            const win = window.open('', '_blank', 'width=250,height=200');
-            win.document.write(`
-                <html>
-                <body style="margin:0; padding:10px; font-family: 'Segoe UI', Arial, sans-serif; text-align:center; border:1px dashed #000; width: 180px; height: auto;">
-                    <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #333;">MECÂNICA LINHA PESADA</div>
-                    <div style="font-size: 22px; font-weight: 800; border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 2px;">${codigo}</div>
-                    <div style="font-size: 10px; line-height: 1; margin-bottom: 8px; font-weight: 600;">${desc}</div>
-                    <div style="font-size: 16px; font-weight: bold; background: #000; color: #fff; padding: 3px;">R$ ${valor}</div>
-                    <div style="font-size: 7px; margin-top: 5px; color: #666;">Impresso em: ${new Date().toLocaleDateString()}</div>
-                    <script>window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }<\/script>
-                </body></html>`);
+            const win = window.open('', '_blank', 'width=250,height=250');
+            win.document.write(`<html><body style="margin:0; padding:10px; font-family: 'Segoe UI', Arial, sans-serif; text-align:center; border:1px dashed #000; width: 180px;">
+                <div style="font-size: 10px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; color: #333;">MECÂNICA LINHA PESADA</div>
+                <div style="font-size: 22px; font-weight: 800; border-bottom: 1px solid #000; margin-bottom: 5px; padding-bottom: 2px;">${codigo}</div>
+                <div style="font-size: 10px; line-height: 1; margin-bottom: 8px; font-weight: 600;">${desc}</div>
+                <div style="font-size: 16px; font-weight: bold; background: #000; color: #fff; padding: 3px;">R$ ${valor}</div>
+                <div style="font-size: 7px; margin-top: 5px; color: #666;">Impresso em: ${new Date().toLocaleDateString()}</div>
+                <script>window.onload = function() { window.print(); setTimeout(() => { window.close(); }, 500); }<\/script>
+            </body></html>`);
             win.document.close();
         };
 
-        // GESTÃO DE ITENS NA OS
+        // GESTÃO DE ITENS NA OC
         window.adicionarLinha = (tipo="Mão de Obra", desc="", qtd=1, unit=0) => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
             tr.innerHTML = `
                 <td style="text-align:center"><button onclick="abrirBuscaEstoque(this)" style="background:none; border:none; font-size:1.1rem; cursor:pointer">📦</button></td>
-                <td><select class="os-tipo">
-                    <option ${tipo==='Mão de Obra'?'selected':''}>Mão de Obra</option>
-                    <option ${tipo==='Peça Abel'?'selected':''}>Peça Abel</option>
-                    <option ${tipo==='Peça Mecânica'?'selected':''}>Peça Mecânica</option>
-                </select></td>
+                <td><select class="os-tipo"><option ${tipo==='Mão de Obra'?'selected':''}>Mão de Obra</option><option ${tipo==='Peça Abel'?'selected':''}>Peça Abel</option><option ${tipo==='Peça Mecânica'?'selected':''}>Peça Mecânica</option></select></td>
                 <td><input type="text" class="os-desc" value="${desc}"></td>
                 <td><input type="number" class="os-qtd" value="${qtd}" oninput="calcTotal()" style="width:45px"></td>
                 <td><input type="number" class="os-unit" value="${unit}" oninput="calcTotal()" style="width:65px"></td>
                 <td class="os-subtotal" style="color:#10b981; font-weight:bold">0.00</td>
-            `;
+                <td style="text-align:center"><button class="btn-remover-linha" onclick="removerLinha(this)">X</button></td>`;
             document.getElementById('corpo-itens').appendChild(tr);
             calcTotal();
         };
+
+        window.removerLinha = (botao) => { if(confirm("Remover este item?")) { botao.closest('tr').remove(); calcTotal(); } };
 
         window.calcTotal = () => {
             let t = 0; 
@@ -406,30 +374,19 @@
             document.getElementById('os_total').value = (t - ent - desc).toFixed(2);
         };
 
-        // PDF E SALVAMENTO
         window.visualizarPDF = () => {
-            const { jsPDF } = window.jspdf;
-            const d = new jsPDF();
+            const { jsPDF } = window.jspdf; const d = new jsPDF();
             d.setFontSize(16); d.text("MECÂNICA LINHA PESADA", 10, 15);
-            d.setFontSize(10);
-            d.text(`Cliente: ${document.getElementById('os_cliente').value}`, 10, 25);
+            d.setFontSize(10); d.text(`Cliente: ${document.getElementById('os_cliente').value}`, 10, 25);
             d.text(`Placa: ${document.getElementById('os_placa').value} | KM: ${document.getElementById('os_km').value}`, 10, 31);
-            d.text(`Mecânico: ${document.getElementById('os_mecanico').value}`, 10, 37);
             d.text(`Emissão: ${document.getElementById('os_data').value.split('-').reverse().join('/')}`, 10, 43);
-            d.text(`Vencimento: ${document.getElementById('os_vencimento').value.split('-').reverse().join('/')}`, 10, 49);
-            
             const itens = [];
             document.querySelectorAll('.linha-item').forEach(l => {
                 itens.push([l.querySelector('.os-tipo').value, l.querySelector('.os-desc').value, l.querySelector('.os-qtd').value, "R$ "+l.querySelector('.os-unit').value, "R$ "+l.querySelector('.os-subtotal').innerText]);
             });
             d.autoTable({ head: [['Tipo', 'Desc', 'Qtd', 'Unit', 'Total']], body: itens, startY: 55 });
-            
-            let finalY = d.lastAutoTable.finalY + 10;
-            d.text(`Entrada: R$ ${parseFloat(document.getElementById('os_entrada').value).toFixed(2)}`, 140, finalY);
-            d.text(`Desconto: R$ ${parseFloat(document.getElementById('os_desconto').value).toFixed(2)}`, 140, finalY + 6);
-            d.setFont(undefined, 'bold');
-            d.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 140, finalY + 14);
-
+            let fY = d.lastAutoTable.finalY + 10;
+            d.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 140, fY);
             document.getElementById('pdfViewer').src = d.output('bloburl');
             document.getElementById('modalPDF').style.display = 'flex';
         };
@@ -440,143 +397,69 @@
                 itens.push({ tipo: l.querySelector('.os-tipo').value, desc: l.querySelector('.os-desc').value, qtd: l.querySelector('.os-qtd').value, unit: l.querySelector('.os-unit').value });
             });
             const dados = { cliente: document.getElementById('os_cliente').value, placa: document.getElementById('os_placa').value, km: document.getElementById('os_km').value, mecanico: document.getElementById('os_mecanico').value, data: document.getElementById('os_data').value, vencimento: document.getElementById('os_vencimento').value, entrada: parseFloat(document.getElementById('os_entrada').value), desconto: parseFloat(document.getElementById('os_desconto').value), itens, total: parseFloat(document.getElementById('os_total').value), status: 'pendente' };
-            
             const idEdit = document.getElementById('edit_os_id').value;
-            if(idEdit) {
-                await updateDoc(doc(db, "ordens", idEdit), dados);
-                alert("Atualizado!");
-            } else {
-                await addDoc(collection(db, "ordens"), dados);
-                alert("Salvo!");
-            }
-            location.reload();
+            if(idEdit) await updateDoc(doc(db, "ordens", idEdit), dados);
+            else await addDoc(collection(db, "ordens"), dados);
+            alert("Salvo!"); location.reload();
         };
 
-        // SNAPSHOTS GERAIS (HISTÓRICO, FINANCEIRO, MECÂNICOS)
+        // SNAPSHOTS (HISTÓRICO, FINANCEIRO, MECÂNICOS, CLIENTES)
         onSnapshot(query(collection(db, "ordens"), orderBy("data", "desc")), (snap) => {
-            const hist = document.getElementById('historicoOS');
-            const dev = document.getElementById('listaDevedores');
-            const finCorpo = document.getElementById('corpo-financeiro');
-            const txtTotalBruto = document.getElementById('totalBrutoDevedores');
-            const abaMecanicos = document.getElementById('lista-cards-mecanicos');
+            const hist = document.getElementById('historicoOS'); const dev = document.getElementById('listaDevedores');
+            const finCorpo = document.getElementById('corpo-financeiro'); const abaMec = document.getElementById('lista-cards-mecanicos');
             const hoje = new Date().toISOString().split('T')[0];
-
-            hist.innerHTML = ""; dev.innerHTML = ""; finCorpo.innerHTML = ""; abaMecanicos.innerHTML = "";
-            let totalAcumuladoDevedores = 0;
-            let resumoMec = { "Abel Moreira": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 }, "Igor": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 } };
+            hist.innerHTML = ""; dev.innerHTML = ""; finCorpo.innerHTML = ""; abaMec.innerHTML = "";
+            let totalDev = 0; let resMec = { "Abel Moreira": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 }, "Igor": { mo: 0, pAbel: 0, pMec: 0, bruto: 0 } };
 
             snap.docs.forEach(d => {
-                const o = d.data(); const id = d.id;
-                const dataBr = o.data ? o.data.split('-').reverse().join('/') : '--/--';
-                const vencBr = o.vencimento ? o.vencimento.split('-').reverse().join('/') : '--/--';
-                const idCurto = id.substring(0,5).toUpperCase();
-
-                if(resumoMec[o.mecanico]) {
-                    o.itens.forEach(item => {
-                        let v = (parseFloat(item.qtd) || 0) * (parseFloat(item.unit) || 0);
-                        if(item.tipo === "Mão de Obra") resumoMec[o.mecanico].mo += v;
-                        else if(item.tipo === "Peça Abel") resumoMec[o.mecanico].pAbel += v;
-                        else if(item.tipo === "Peça Mecânica") resumoMec[o.mecanico].pMec += v;
+                const o = d.data(); const id = d.id; const idC = id.substring(0,5).toUpperCase();
+                const vBr = o.vencimento ? o.vencimento.split('-').reverse().join('/') : '--/--';
+                if(resMec[o.mecanico]) {
+                    o.itens.forEach(i => {
+                        let v = (parseFloat(i.qtd) || 0) * (parseFloat(i.unit) || 0);
+                        if(i.tipo === "Mão de Obra") resMec[o.mecanico].mo += v;
+                        else if(i.tipo === "Peça Abel") resMec[o.mecanico].pAbel += v;
+                        else if(i.tipo === "Peça Mecânica") resMec[o.mecanico].pMec += v;
                     });
-                    resumoMec[o.mecanico].bruto += (parseFloat(o.total) || 0);
+                    resMec[o.mecanico].bruto += o.total;
                 }
-
-                let corStatus = o.status === 'pago' ? '#10b981' : (o.vencimento < hoje ? '#ef4444' : '#f59e0b');
-
-                hist.innerHTML += `<div class="card" style="border-left: 4px solid ${corStatus}">
-                    <div style="display:flex; justify-content:space-between">
-                         <span class="info-label">Nº OC: ${idCurto}</span>
-                         <span class="info-label" style="color:#9ca3af">${dataBr}</span>
-                    </div>
-                    <div class="info-linha"><span class="info-label">CLIENTE</span><span class="info-valor">${o.cliente}</span></div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
-                        <div class="info-linha"><span class="info-label">MECÂNICO</span><span class="info-valor">${o.mecanico}</span></div>
-                        <div class="info-linha"><span class="info-label">VALOR TOTAL</span><span class="info-valor" style="color:#10b981; font-weight:bold">R$ ${o.total.toFixed(2)}</span></div>
-                    </div>
-                    <div class="acoes-hist">
-                        <button class="btn btn-mini btn-green" onclick="baixar('${id}', 'pago')">BAIXAR</button>
-                        <button class="btn btn-mini btn-blue" onclick="editarOS('${id}')">EDITAR</button>
-                        <button class="btn btn-mini btn-red" onclick="excluirOS('${id}')">EXCLUIR</button>
-                    </div>
-                </div>`;
-
-                if(o.status === 'pendente') {
-                    totalAcumuladoDevedores += o.total;
-                    dev.innerHTML += `<div class="card" style="border-left:5px solid ${o.vencimento < hoje ? '#ef4444' : '#f59e0b'}">
-                        <div style="display:flex; justify-content:space-between; align-items:center">
-                            <span><b>${o.cliente}</b><br><small>Vence: ${vencBr}</small><br>R$ ${o.total.toFixed(2)}</span>
-                            <span class="status-badge" style="color:${o.vencimento < hoje ? '#ef4444' : '#f59e0b'}">${o.vencimento < hoje ? 'ATRASADO' : 'PENDENTE'}</span>
-                        </div>
-                    </div>`;
-                }
-
-                finCorpo.innerHTML += `<tr><td>${idCurto}</td><td>${o.cliente}</td><td>${vencBr}</td><td style="font-weight:bold">R$ ${o.total.toFixed(2)}</td> <td><select class="sel-status" onchange="baixar('${id}', this.value)" style="border-left: 4px solid ${corStatus}"><option value="pendente" ${o.status==='pendente'?'selected':''}>PENDENTE</option><option value="pago" ${o.status==='pago'?'selected':''}>PAGO</option></select></td></tr>`;
+                let corS = o.status === 'pago' ? '#10b981' : (o.vencimento < hoje ? '#ef4444' : '#f59e0b');
+                hist.innerHTML += `<div class="card" style="border-left: 4px solid ${corS}"><div class="info-linha"><span class="info-label">CLIENTE</span><span class="info-valor">${o.cliente}</span></div><div class="info-linha"><span class="info-label">VALOR</span><span class="info-valor">R$ ${o.total.toFixed(2)}</span></div><div class="acoes-hist"><button class="btn btn-mini btn-blue" onclick="editarOS('${id}')">EDITAR</button></div></div>`;
+                if(o.status === 'pendente') { totalDev += o.total; dev.innerHTML += `<div class="card"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}</div>`; }
+                finCorpo.innerHTML += `<tr><td>${idC}</td><td>${o.cliente}</td><td>${vBr}</td><td>R$ ${o.total.toFixed(2)}</td><td><select class="sel-status" onchange="baixar('${id}', this.value)"><option value="pendente" ${o.status==='pendente'?'selected':''}>PENDENTE</option><option value="pago" ${o.status==='pago'?'selected':''}>PAGO</option></select></td></tr>`;
             });
-
-            for(let mec in resumoMec) {
-                abaMecanicos.innerHTML += `<div class="card card-mecanico"><h3>${mec.toUpperCase()}</h3><div class="item-mecanico"><span>Mão de Obra Total:</span><span class="valor-mecanico">R$ ${resumoMec[mec].mo.toFixed(2)}</span></div><div class="item-mecanico"><span>Peça Abel Total:</span><span class="valor-mecanico">R$ ${resumoMec[mec].pAbel.toFixed(2)}</span></div><div class="item-mecanico"><span>Peça Mecânica Total:</span><span class="valor-mecanico">R$ ${resumoMec[mec].pMec.toFixed(2)}</span></div><div class="item-mecanico" style="margin-top:10px; border-top:1px dashed #444; padding-top:5px; font-weight:bold; color:#10b981"><span>TOTAL BRUTO:</span><span>R$ ${resumoMec[mec].bruto.toFixed(2)}</span></div></div>`;
-            }
-            txtTotalBruto.innerText = `R$ ${totalAcumuladoDevedores.toFixed(2)}`;
+            for(let m in resMec) { abaMec.innerHTML += `<div class="card card-mecanico"><h3>${m}</h3><div class="item-mecanico"><span>Total Bruto:</span><span class="valor-mecanico">R$ ${resMec[m].bruto.toFixed(2)}</span></div></div>`; }
+            document.getElementById('totalBrutoDevedores').innerText = `R$ ${totalDev.toFixed(2)}`;
         });
 
-        // CLIENTES
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
-            const list = document.getElementById('listaClientes');
-            const select = document.getElementById('os_cliente');
-            list.innerHTML = ""; select.innerHTML = "";
+            const list = document.getElementById('listaClientes'); const sel = document.getElementById('os_cliente');
+            list.innerHTML = ""; sel.innerHTML = "";
             snap.docs.forEach(d => {
                 const c = d.data(); const id = d.id;
-                list.innerHTML += `<div class="card card-cliente"><div class="info-linha"><span class="info-label">NOME</span><span class="info-valor"><b>${c.nome}</b></span></div><div class="info-linha"><span class="info-label">DOC</span><span class="info-valor">${c.doc || '---'}</span></div><div class="info-linha"><span class="info-label">TEL</span><span class="info-valor">${c.tel || '---'}</span></div><div class="info-linha"><span class="info-label">ENDEREÇO</span><span class="info-valor">${c.end || ''}, ${c.cidade || ''}</span></div><div style="display:flex; gap:10px;"><button class="btn btn-blue btn-mini" onclick="editarCliente('${id}')">EDITAR</button><button class="btn btn-red btn-mini" onclick="excluirCliente('${id}')">EXCLUIR</button></div></div>`;
-                select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
+                list.innerHTML += `<div class="card card-cliente"><b>${c.nome}</b><br>${c.tel || ''}</div>`;
+                sel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
         });
 
-        window.editarCliente = async (id) => {
-            const snap = await getDoc(doc(db, "clientes", id));
-            const c = snap.data();
-            abrirAba(null, 'aba_cad_cliente');
-            document.getElementById('titulo_cad_cliente').innerText = "Editando Cliente";
-            document.getElementById('edit_cliente_id').value = id;
-            document.getElementById('cl_nome').value = c.nome;
-            document.getElementById('cl_doc').value = c.doc || "";
-            document.getElementById('cl_tel').value = c.tel || "";
-            document.getElementById('cl_email').value = c.email || "";
-            document.getElementById('cl_end').value = c.end || "";
-            document.getElementById('cl_cidade').value = c.cidade || "";
-            document.getElementById('btn_salvar_cliente').innerText = "ATUALIZAR CLIENTE";
-        };
-
         window.salvarCliente = async () => {
-            const nome = document.getElementById('cl_nome').value;
-            const idEdit = document.getElementById('edit_cliente_id').value;
-            if(!nome) return alert("Nome obrigatório");
-            const dados = { nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, email: document.getElementById('cl_email').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value };
-            if(idEdit) await updateDoc(doc(db, "clientes", idEdit), dados);
-            else await addDoc(collection(db, "clientes"), dados);
-            alert("Cliente salvo!");
-            location.reload();
+            const nome = document.getElementById('cl_nome').value; if(!nome) return alert("Nome obrigatório");
+            await addDoc(collection(db, "clientes"), { nome: nome.toUpperCase(), doc: document.getElementById('cl_doc').value, tel: document.getElementById('cl_tel').value, end: document.getElementById('cl_end').value, cidade: document.getElementById('cl_cidade').value });
+            alert("Cliente salvo!"); location.reload();
         };
 
         window.editarOS = async (id) => {
-            const snap = await getDoc(doc(db, "ordens", id));
-            const o = snap.data();
-            abrirAba(null, 'aba_nova_os');
-            document.getElementById('edit_os_id').value = id;
-            document.getElementById('os_cliente').value = o.cliente;
-            document.getElementById('os_placa').value = o.placa;
-            document.getElementById('os_km').value = o.km;
-            document.getElementById('os_mecanico').value = o.mecanico;
-            document.getElementById('os_data').value = o.data;
-            document.getElementById('os_entrada').value = o.entrada || 0;
-            document.getElementById('os_desconto').value = o.desconto || 0;
-            document.getElementById('corpo-itens').innerHTML = "";
-            o.itens.forEach(i => adicionarLinha(i.tipo, i.desc, i.qtd, i.unit));
-            calcTotal();
+            const snap = await getDoc(doc(db, "ordens", id)); const o = snap.data();
+            abrirAba(null, 'aba_nova_os'); document.getElementById('edit_os_id').value = id;
+            document.getElementById('os_cliente').value = o.cliente; document.getElementById('os_placa').value = o.placa;
+            document.getElementById('os_km').value = o.km; document.getElementById('os_mecanico').value = o.mecanico;
+            document.getElementById('os_data').value = o.data; document.getElementById('os_entrada').value = o.entrada;
+            document.getElementById('os_desconto').value = o.desconto; document.getElementById('corpo-itens').innerHTML = "";
+            o.itens.forEach(i => adicionarLinha(i.tipo, i.desc, i.qtd, i.unit)); calcTotal();
         };
 
-        window.excluirOS = async (id) => { if(confirm("Apagar nota?")) await deleteDoc(doc(db, "ordens", id)); };
-        window.excluirCliente = async (id) => { if(confirm("Apagar cliente?")) await deleteDoc(doc(db, "clientes", id)); };
-        window.baixar = async (id, status) => { await updateDoc(doc(db, "ordens", id), { status: status }); };
+        window.baixar = async (id, s) => { await updateDoc(doc(db, "ordens", id), { status: s }); };
+        window.excluirPeca = async (id) => { if(confirm("Remover do estoque?")) await deleteDoc(doc(db, "estoque", id)); };
     </script>
 </body>
 </html>
