@@ -55,7 +55,7 @@
         .btn-green { background: #10b981; color: #fff; }
 
         .tabela-itens { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
-        .tabela-itens th { font-size: 0.6rem; color: #3b82f6; text-align: left; padding: 4px; }
+        .tabela-itens th { font-size: 0.55rem; color: #3b82f6; text-align: left; padding: 4px; text-transform: uppercase; }
         
         #tela-login { background: #000; height: 100vh; display: flex; justify-content: center; align-items: center; position: fixed; width: 100%; z-index: 10000; }
     </style>
@@ -80,14 +80,12 @@
         </header>
 
         <nav id="nav-abas">
-            <div class="tab-link active" onclick="abrirAba(event, 'aba_cad_cliente')">1. Cadastro de Clientes</div>
+            <div class="tab-link active" onclick="abrirAba(event, 'aba_cad_cliente')">1. Cadastro</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_clientes')">2. Clientes</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_nova_os')">3. Nova OC</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico de OC</div>
+            <div class="tab-link" onclick="abrirAba(event, 'aba_hist_os')">4. Histórico</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_financeiro')">5. Financeiro</div>
             <div class="tab-link" onclick="abrirAba(event, 'aba_devedores')">6. Devedores</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_mecanico')">7. Mecânico</div>
-            <div class="tab-link" onclick="abrirAba(event, 'aba_estoque')">8. Estoque</div>
         </nav>
 
         <main class="container">
@@ -96,13 +94,13 @@
                     <h2>Informações do Cliente</h2>
                     <div class="grid-form">
                         <div class="campo"><label>Nome / Razão Social</label><input type="text" id="cl_nome"></div>
-                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" maxlength="18" placeholder="000.000.000-00" oninput="mascaraDoc(this)"></div>
-                        <div class="campo"><label>WhatsApp / Telefone</label><input type="text" id="cl_tel" maxlength="15" placeholder="(00) 00000-0000" oninput="mascaraTel(this)"></div>
+                        <div class="campo"><label>CPF / CNPJ</label><input type="text" id="cl_doc" maxlength="18" oninput="mascaraDoc(this)"></div>
+                        <div class="campo"><label>WhatsApp</label><input type="text" id="cl_tel" maxlength="15" oninput="mascaraTel(this)"></div>
                         <div class="campo"><label>Endereço / Nº</label><input type="text" id="cl_end"></div>
                         <div class="campo"><label>Bairro</label><input type="text" id="cl_bairro"></div>
                         <div class="campo"><label>Cidade / UF</label><input type="text" id="cl_cidade"></div>
                     </div>
-                    <button class="btn btn-blue" onclick="salvarCliente()">SALVAR CADASTRO COMPLETO</button>
+                    <button class="btn btn-blue" onclick="salvarCliente()">SALVAR CADASTRO</button>
                 </div>
             </section>
 
@@ -118,17 +116,27 @@
                         <div class="campo"><label>Selecionar Cliente</label><select id="os_cliente"></select></div>
                         <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
                         <div class="campo"><label>KM</label><input type="number" id="os_km"></div>
-                        <div class="campo"><label>Mecânico Responsável</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
+                        <div class="campo"><label>Mecânico</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
                         <div class="campo"><label>Data Emissão</label><input type="date" id="os_data"></div>
-                        <div class="campo"><label>Vencimento (15 Dias)</label><input type="date" id="os_vencimento"></div>
+                        <div class="campo"><label>Vencimento</label><input type="date" id="os_vencimento"></div>
                     </div>
+
                     <table class="tabela-itens">
-                        <thead><tr><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th></tr></thead>
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">TIPO</th>
+                                <th style="width: 30%;">DESCRIÇÃO</th>
+                                <th style="width: 10%;">QTD</th>
+                                <th style="width: 15%;">R$ UNIT</th>
+                                <th style="width: 20%;">R$ TOTAL</th>
+                            </tr>
+                        </thead>
                         <tbody id="corpo-itens"></tbody>
                     </table>
+                    
                     <button class="btn" style="border:1px solid #3b82f6; color:#3b82f6; background:none; margin-bottom:10px" onclick="adicionarLinha()">+ ADICIONAR ITEM</button>
                     
-                    <div class="campo"><label>Observações do Serviço</label><textarea id="os_obs" rows="2" placeholder="Ex: Detalhes técnicos..."></textarea></div>
+                    <div class="campo"><label>Observações</label><textarea id="os_obs" rows="2"></textarea></div>
 
                     <div class="grid-form">
                         <div class="campo"><label>Desconto R$</label><input type="number" id="os_desconto" value="0" oninput="calcTotal()"></div>
@@ -136,14 +144,14 @@
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-                        <button class="btn btn-green" onclick="salvarOS()">SALVAR OC NO SISTEMA</button>
+                        <button class="btn btn-green" onclick="salvarOS()">SALVAR NO SISTEMA</button>
                         <button class="btn btn-blue" onclick="gerarPDF()">VISUALIZAR PDF</button>
                     </div>
                 </div>
             </section>
 
             <section id="aba_hist_os" class="tab-content"><div id="historicoOS"></div></section>
-            <section id="aba_financeiro" class="tab-content"><div class="card" style="text-align:center"><label>TOTAL RECEBIDO (MÊS)</label><h1 id="total_financeiro" style="color:#10b981; font-size: 2.2rem;">R$ 0,00</h1></div></section>
+            <section id="aba_financeiro" class="tab-content"><div class="card" style="text-align:center"><label>TOTAL RECEBIDO</label><h1 id="total_financeiro" style="color:#10b981; font-size: 2.2rem;">R$ 0,00</h1></div></section>
             <section id="aba_devedores" class="tab-content"><div id="listaDevedores"></div></section>
         </main>
     </div>
@@ -192,14 +200,18 @@
         window.logar = () => { if(document.getElementById('pass').value === "8489") { localStorage.setItem('lp_login', 'ok'); location.reload(); } else alert("Senha Errada!"); };
         window.logout = () => { localStorage.removeItem('lp_login'); location.reload(); };
         window.verificarLogin = () => { if(localStorage.getItem('lp_login')) { document.getElementById('tela-login').style.display='none'; document.getElementById('sistema').style.display='block'; } };
-        window.abrirAba = (e, id) => { document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active'); window.scrollTo(0,0); };
         
-        // DATAS AUTOMÁTICAS (HOJE + 15 DIAS)
+        window.abrirAba = (e, id) => { 
+            document.querySelectorAll('.tab-content, .tab-link').forEach(x => x.classList.remove('active')); 
+            document.getElementById(id).classList.add('active'); 
+            e.currentTarget.classList.add('active'); 
+            window.scrollTo(0,0); 
+        };
+        
         window.setarDatasIniciais = () => { 
             const hoje = new Date();
             const venc = new Date();
             venc.setDate(hoje.getDate() + 15);
-            
             document.getElementById('os_data').value = hoje.toISOString().split('T')[0];
             document.getElementById('os_vencimento').value = venc.toISOString().split('T')[0];
             adicionarLinha(); 
@@ -207,11 +219,25 @@
 
         window.adicionarLinha = () => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
-            tr.innerHTML = `<td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td><td><input type="text" class="os-desc"></td><td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td><td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>`;
+            tr.innerHTML = `
+                <td><select class="os-tipo"><option>Peça Abel</option><option>Peça Mecânica</option><option>Mão-de-Obra</option></select></td>
+                <td><input type="text" class="os-desc"></td>
+                <td><input type="number" class="os-qtd" value="1" oninput="calcTotal()"></td>
+                <td><input type="number" class="os-unit" value="0" oninput="calcTotal()"></td>
+                <td><input type="text" class="os-subtotal" value="0.00" readonly style="background:transparent; border:none; color:#10b981; font-weight:bold; width:100%"></td>
+            `;
             document.getElementById('corpo-itens').appendChild(tr);
         };
+
         window.calcTotal = () => {
-            let t = 0; document.querySelectorAll('.linha-item').forEach(l => { t += (parseFloat(l.querySelector('.os-qtd').value || 0) * parseFloat(l.querySelector('.os-unit').value || 0)); });
+            let t = 0; 
+            document.querySelectorAll('.linha-item').forEach(l => {
+                const q = parseFloat(l.querySelector('.os-qtd').value || 0);
+                const u = parseFloat(l.querySelector('.os-unit').value || 0);
+                const sub = q * u;
+                l.querySelector('.os-subtotal').value = sub.toFixed(2);
+                t += sub; 
+            });
             const d = parseFloat(document.getElementById('os_desconto').value || 0);
             document.getElementById('os_total').value = (t - d).toFixed(2);
         };
@@ -266,7 +292,7 @@
             docPDF.text(`Fone: ${dCl.tel || '-'}`, 15, 54);
 
             docPDF.setFontSize(10);
-            docPDF.text("DADOS DO VEÍCULO / SERVIÇO", 120, 33);
+            docPDF.text("DADOS DO VEÍCULO", 120, 33);
             docPDF.setFontSize(9);
             docPDF.text(`Placa: ${document.getElementById('os_placa').value.toUpperCase()}`, 120, 39);
             docPDF.text(`KM: ${document.getElementById('os_km').value}`, 120, 44);
@@ -291,10 +317,8 @@
             let finalY = docPDF.lastAutoTable.finalY + 10;
             docPDF.setFontSize(12);
             docPDF.text(`TOTAL FINAL: R$ ${document.getElementById('os_total').value}`, 145, finalY);
-            
             docPDF.line(15, finalY + 30, 90, finalY + 30);
             docPDF.text("Assinatura do Responsável", 15, finalY + 35);
-            
             docPDF.save(`OS_LINHAPESADA_${nomeCl}.pdf`);
         };
 
@@ -306,10 +330,13 @@
                 const c = d.data();
                 list.innerHTML += `
                     <div class="card card-cliente">
-                        <div class="info-linha"><span class="info-label">Cliente</span><span class="info-valor">${c.nome}</span></div>
-                        <div class="info-linha"><span class="info-label">CPF/CNPJ</span><span class="info-valor">${c.doc || '-'}</span></div>
-                        <div class="info-linha"><span class="info-label">WhatsApp</span><span class="info-valor">${c.tel || '-'}</span></div>
-                        <div class="info-linha"><span class="info-label">Endereço</span><span class="info-valor">${c.end || '-'}, ${c.bairro || '-'} - ${c.cidade || '-'}</span></div>
+                        <div class="info-linha"><span class="info-label">Nome / Razão Social</span><span class="info-valor">${c.nome}</span></div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="info-linha"><span class="info-label">CPF / CNPJ</span><span class="info-valor">${c.doc || '-'}</span></div>
+                            <div class="info-linha"><span class="info-label">WhatsApp</span><span class="info-valor">${c.tel || '-'}</span></div>
+                        </div>
+                        <div class="info-linha"><span class="info-label">Endereço</span><span class="info-valor">${c.end || '-'}, ${c.bairro || '-'}</span></div>
+                        <div class="info-linha"><span class="info-label">Cidade / UF</span><span class="info-valor">${c.cidade || '-'}</span></div>
                     </div>`;
                 select.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
             });
