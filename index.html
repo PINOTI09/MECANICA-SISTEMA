@@ -109,12 +109,12 @@
                     <h2>Nova Ordem de Serviço</h2>
                     <input type="hidden" id="edit_os_id">
                     <div class="grid-form">
-                        <div class="campo"><label>Cliente</label><select id="os_cliente"></select></div>
+                        <div class="campo"><label>Cliente</label><select id="os_cliente" onchange="window.calcVencimento()"></select></div>
                         <div class="campo"><label>Placa</label><input type="text" id="os_placa"></div>
                         <div class="campo"><label>KM Atual</label><input type="number" id="os_km"></div>
                         <div class="campo"><label>Mecânico</label><select id="os_mecanico"><option>Abel Moreira</option><option>Igor</option></select></div>
-                        <div class="campo"><label>Emissão</label><input type="date" id="os_data" onchange="calcVencimento()"></div>
-                        <div class="campo"><label>Vencimento</label><input type="date" id="os_vencimento" readonly></div>
+                        <div class="campo"><label>Emissão</label><input type="date" id="os_data" onchange="window.calcVencimento()"></div>
+                        <div class="campo"><label>Vencimento (Auto)</label><input type="date" id="os_vencimento"></div>
                     </div>
                     <table style="width:100%; margin-top:10px; border-collapse:collapse">
                         <thead><tr style="color:#3b82f6; font-size:0.6rem; text-align:left"><th>📦</th><th>TIPO</th><th>DESCRIÇÃO</th><th>QTD</th><th>R$ UNIT</th><th>TOTAL</th><th></th></tr></thead>
@@ -177,7 +177,7 @@
             <h2 style="color:white; margin-bottom:10px">Selecionar do Estoque</h2>
             <input type="text" id="filtroEstoque" oninput="filtrarModalEstoque()" placeholder="Pesquisar peça...">
             <div id="corpoBuscaEstoque"></div>
-            <button class="btn btn-red" onclick="document.getElementById('modalBuscaEstoque').style.display='none'">CANCELAR</button>
+            <button class="btn btn-red" onclick="document.getElementById('modalBuscaEstoque').style.display='none'" style="margin-top:10px">CANCELAR</button>
         </div>
     </div>
 
@@ -209,7 +209,8 @@
             let ordensPorCliente = [...todasOrdens].sort((a,b) => a.cliente.localeCompare(b.cliente));
 
             hist.innerHTML = ""; fin.innerHTML = ""; dev.innerHTML = ""; mec.innerHTML = "";
-            let somaBruto = 0;
+            let somaBrutoTotal = 0;
+            let devedoresAgrupados = {};
             let resMec = { "Abel Moreira": { mo: 0, abel: 0, mec: 0, total: 0 }, "Igor": { mo: 0, abel: 0, mec: 0, total: 0 } };
 
             ordensPorData.forEach(o => {
@@ -257,11 +258,11 @@
                 </div>`;
 
                 if(o.status !== 'pago') {
-                    dev.innerHTML += `<div class="card" style="border-left:4px solid ${o.status==='atrasado'?'#ef4444':'#f59e0b'}"><b>${o.cliente}</b> - R$ ${o.total.toFixed(2)}</div>`;
-                    somaBruto += o.total;
+                    if(!devedoresAgrupados[o.cliente]) devedoresAgrupados[o.cliente] = 0;
+                    devedoresAgrupados[o.cliente] += o.total;
+                    somaBrutoTotal += o.total;
                 }
 
-                // CÁLCULO POR MECÂNICO - CORRIGIDO PARA 'itens'
                 if(resMec[o.mecanico]) {
                     if (o.itens && Array.isArray(o.itens)) {
                         o.itens.forEach(i => {
@@ -274,8 +275,14 @@
                     resMec[o.mecanico].total += o.total;
                 }
             });
-            
-            txtBruto.innerText = "R$ " + somaBruto.toLocaleString('pt-br', {minimumFractionDigits: 2});
+
+            for (let cli in devedoresAgrupados) {
+                dev.innerHTML += `<div class="card" style="display: flex; justify-content: space-between; align-items: center; border-left: 4px solid #f59e0b;">
+                    <span style="font-weight: bold; text-transform: uppercase; font-size: 0.8rem;">${cli}</span>
+                    <span style="color: #ef4444; font-weight: bold; font-size: 0.9rem;">R$ ${devedoresAgrupados[cli].toFixed(2)}</span>
+                </div>`;
+            }
+            txtBruto.innerText = "R$ " + somaBrutoTotal.toLocaleString('pt-br', {minimumFractionDigits: 2});
 
             for(let m in resMec) {
                 mec.innerHTML += `<div class="card"><h2 style="margin-bottom:15px">${m}</h2>
@@ -290,10 +297,9 @@
         window.mudarCampo = async (id, campo, val) => { let d = {}; d[campo] = val; await updateDoc(doc(db, "ordens", id), d); };
         window.apagarOS = async (id) => { if(confirm("Apagar OC?")) await deleteDoc(doc(db, "ordens", id)); };
 
-        // CLIENTES
         onSnapshot(query(collection(db, "clientes"), orderBy("nome")), (snap) => {
             const list = document.getElementById('listaClientes'); const sel = document.getElementById('os_cliente');
-            list.innerHTML = ""; sel.innerHTML = "";
+            list.innerHTML = ""; sel.innerHTML = '<option value="">Selecione o Cliente</option>';
             snap.docs.forEach(d => {
                 const c = d.data();
                 list.innerHTML += `<div class="card">
@@ -314,7 +320,6 @@
 
         window.apagarCliente = async (id) => { if(confirm("Apagar?")) await deleteDoc(doc(db, "clientes", id)); };
 
-        // ESTOQUE - SALVAR, EDITAR E EXCLUIR
         onSnapshot(collection(db, "estoque"), (snap) => {
             const list = document.getElementById('listaEstoque'); list.innerHTML = "";
             pecasEstoqueCache = snap.docs.map(d => ({...d.data(), id: d.id}));
@@ -365,7 +370,6 @@
 
         window.apagarEstoque = async (id) => { if(confirm("Excluir?")) await deleteDoc(doc(db, "estoque", id)); };
 
-        // BUSCA ESTOQUE NA OC
         window.abrirBuscaEstoque = (btn) => { linhaSendoEditada = btn.closest('tr'); document.getElementById('modalBuscaEstoque').style.display='flex'; renderizarBusca(pecasEstoqueCache); };
         function renderizarBusca(lista) {
             const corpo = document.getElementById('corpoBuscaEstoque'); corpo.innerHTML = "";
@@ -382,9 +386,23 @@
             });
         }
 
-        // LÓGICA OS
-        window.setarDatasIniciais = () => { document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; window.calcVencimento(); window.adicionarLinha(); };
-        window.calcVencimento = () => { let d = new Date(document.getElementById('os_data').value); d.setDate(d.getDate() + 15); document.getElementById('os_vencimento').value = d.toISOString().split('T')[0]; };
+        window.setarDatasIniciais = () => { 
+            document.getElementById('os_data').value = new Date().toISOString().split('T')[0]; 
+            window.calcVencimento(); 
+            window.adicionarLinha(); 
+        };
+
+        // Lógica para MAROSO = 30 dias, outros = 15 dias
+        window.calcVencimento = () => { 
+            let dataEmi = document.getElementById('os_data').value;
+            let cliente = document.getElementById('os_cliente').value;
+            if(dataEmi){
+                let d = new Date(dataEmi);
+                let diasParaAdicionar = (cliente === "MAROSO") ? 30 : 15;
+                d.setDate(d.getDate() + diasParaAdicionar); 
+                document.getElementById('os_vencimento').value = d.toISOString().split('T')[0]; 
+            }
+        };
         
         window.adicionarLinha = (tipo="Mão de Obra", desc="", qtd=1, unit=0) => {
             const tr = document.createElement('tr'); tr.className = 'linha-item';
@@ -420,6 +438,7 @@
             document.getElementById('edit_os_id').value = id; document.getElementById('os_cliente').value = o.cliente;
             document.getElementById('os_placa').value = o.placa; document.getElementById('os_km').value = o.km;
             document.getElementById('os_mecanico').value = o.mecanico; document.getElementById('os_data').value = o.data;
+            document.getElementById('os_vencimento').value = o.vencimento;
             document.getElementById('os_entrada').value = o.entrada; document.getElementById('os_desconto').value = o.desconto;
             document.getElementById('corpo-itens').innerHTML = ""; o.itens.forEach(i => window.adicionarLinha(i.tipo, i.desc, i.qtd, i.unit));
             window.abrirAba(null, 'aba_nova_os');
